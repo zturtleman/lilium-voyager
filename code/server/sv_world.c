@@ -222,28 +222,88 @@ void SV_LinkEntity( sharedEntity_t *gEnt ) {
 	// encode the size into the entityState_t for client prediction
 	if ( gEnt->r.bmodel ) {
 		gEnt->s.solid = SOLID_BMODEL;		// a solid_box will never create this value
+#ifdef ELITEFORCE
+	} else if ( gEnt->r.contents & ( CONTENTS_SOLID | CONTENTS_BODY | CONTENTS_SHOTCLIP ) ) {
+		if(gEnt->r.svFlags & SVF_SHIELD_BBOX)
+		{
+			if(gEnt->s.time2 & (1 << 24))
+			{
+				i = gEnt->r.maxs[0];
+				if (i<1)
+					i = 1;
+					if (i>255)
+					i = 255;
+
+				// z is not symetric
+				j = -gEnt->r.mins[0];
+				if (j<1)
+					j = 1;
+				if (j>255)
+					j = 255;
+
+				// and z maxs can be negative...
+				k = gEnt->r.maxs[2];
+				if (k<1)
+					k = 1;
+				if (k>255)
+					k = 255;
+
+				gEnt->s.eFlags |= EF_SHIELD_BOX_X;
+			}
+			else
+			{
+				i = gEnt->r.maxs[1];
+				if (i<1)
+					i = 1;
+					if (i>255)
+					i = 255;
+
+				// z is not symetric
+				j = -gEnt->r.mins[1];
+				if (j<1)
+					j = 1;
+				if (j>255)
+					j = 255;
+
+				// and z maxs can be negative...
+				k = gEnt->r.maxs[2];
+				if (k<1)
+					k = 1;
+				if (k>255)
+					k = 255;
+
+				gEnt->s.eFlags |= EF_SHIELD_BOX_Y;
+			}
+		}
+		else
+		{
+#else
 	} else if ( gEnt->r.contents & ( CONTENTS_SOLID | CONTENTS_BODY ) ) {
-		// assume that x/y are equal and symetric
-		i = gEnt->r.maxs[0];
-		if (i<1)
-			i = 1;
-		if (i>255)
-			i = 255;
+#endif
+			// assume that x/y are equal and symetric
+			i = gEnt->r.maxs[0];
+			if (i<1)
+				i = 1;
+			if (i>255)
+				i = 255;
 
-		// z is not symetric
-		j = (-gEnt->r.mins[2]);
-		if (j<1)
-			j = 1;
-		if (j>255)
-			j = 255;
+			// z is not symetric
+			j = (-gEnt->r.mins[2]);
+			if (j<1)
+				j = 1;
+			if (j>255)
+				j = 255;
 
-		// and z maxs can be negative...
-		k = (gEnt->r.maxs[2]+32);
-		if (k<1)
-			k = 1;
-		if (k>255)
-			k = 255;
-
+			// and z maxs can be negative...
+			k = (gEnt->r.maxs[2]+32);
+			if (k<1)
+				k = 1;
+			if (k>255)
+				k = 255;
+#ifdef ELITEFORCE
+		}
+#endif
+		
 		gEnt->s.solid = (k<<16) | (j<<8) | i;
 	} else {
 		gEnt->s.solid = 0;

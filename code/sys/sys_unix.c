@@ -58,7 +58,14 @@ char *Sys_DefaultHomePath(void)
 		if( ( p = getenv( "HOME" ) ) != NULL )
 		{
 			Com_sprintf(homePath, sizeof(homePath), "%s%c", p, PATH_SEP);
-#ifdef MACOS_X
+#ifdef ELITEFORCE
+  #ifdef MACOS_X
+			Q_strcat(homePath, sizeof(homePath), "/Library/Application Support/STVEF");
+  #else
+			Q_strcat(homePath, sizeof(homePath), "/.stvef");
+  #endif
+#else
+  #ifdef MACOS_X
 			Q_strcat(homePath, sizeof(homePath),
 				"Library/Application Support/");
 
@@ -66,11 +73,12 @@ char *Sys_DefaultHomePath(void)
 				Q_strcat(homePath, sizeof(homePath), com_homepath->string);
 			else
 				Q_strcat(homePath, sizeof(homePath), HOMEPATH_NAME_MACOSX);
-#else
+  #else
 			if(com_homepath->string[0])
 				Q_strcat(homePath, sizeof(homePath), com_homepath->string);
 			else
 				Q_strcat(homePath, sizeof(homePath), HOMEPATH_NAME_UNIX);
+  #endif
 #endif
 		}
 	}

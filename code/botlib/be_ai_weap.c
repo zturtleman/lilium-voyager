@@ -417,7 +417,11 @@ int BotChooseBestFightWeapon(int weaponstate, int *inventory)
 	if (!ws->weaponweightconfig) return 0;
 
 	bestweight = 0;
+#ifdef ELITEFORCE
+	bestweapon = 1;
+#else
 	bestweapon = 0;
+#endif
 	for (i = 0; i < wc->numweapons; i++)
 	{
 		if (!wc->weaponinfo[i].valid) continue;

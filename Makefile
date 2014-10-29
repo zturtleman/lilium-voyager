@@ -96,7 +96,11 @@ endif
 export CROSS_COMPILING
 
 ifndef VERSION
-VERSION=1.36
+  ifeq ($(BUILD_ELITEFORCE),1)
+    VERSION=1.38
+  else
+    VERSION=1.36
+  endif
 endif
 
 ifndef CLIENTBIN
@@ -266,6 +270,10 @@ LOKISETUPDIR=misc/setup
 NSISDIR=misc/nsis
 SDLHDIR=$(MOUNT_DIR)/SDL2
 LIBSDIR=$(MOUNT_DIR)/libs
+
+ifeq ($(BUILD_ELITEFORCE),1)
+  CFLAGS += -DELITEFORCE
+endif
 
 bin_path=$(shell which $(1) 2> /dev/null)
 

@@ -972,7 +972,11 @@ void PerpendicularVector( vec3_t dst, const vec3_t src )
 	/*
 	** find the smallest magnitude axially aligned vector
 	*/
+#ifdef ELITEFORCE
+	for ( pos = 0, i = 2; i >= 0; i-- )
+#else
 	for ( pos = 0, i = 0; i < 3; i++ )
+#endif
 	{
 		if ( fabs( src[i] ) < minelem )
 		{

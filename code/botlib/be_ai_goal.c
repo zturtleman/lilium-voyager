@@ -374,7 +374,11 @@ void InitLevelItemHeap(void)
 
 	if (levelitemheap) FreeMemory(levelitemheap);
 
+#ifdef ELITEFORCE
+	max_levelitems = (int) LibVarValue("max_levelitems", "1024");
+#else
 	max_levelitems = (int) LibVarValue("max_levelitems", "256");
+#endif
 	levelitemheap = (levelitem_t *) GetClearedMemory(max_levelitems * sizeof(levelitem_t));
 
 	for (i = 0; i < max_levelitems-1; i++)

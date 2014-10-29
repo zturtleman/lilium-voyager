@@ -1161,6 +1161,12 @@ void CM_Trace( trace_t *results, const vec3_t start, const vec3_t end, vec3_t mi
 	// fill in a default trace
 	Com_Memset( &tw, 0, sizeof(tw) );
 	tw.trace.fraction = 1;	// assume it goes the entire distance until shown otherwise
+#ifdef ELITEFORCE
+	// obviously Raven fucked this up. They seem to expect a SURF_NOIMPACT flag if the trace
+	// went through to the end, or the game will crash when firing the dreadnought weapon and
+	// it doesn't hit anything.
+	tw.trace.surfaceFlags = SURF_NOIMPACT;
+#endif
 	VectorCopy(origin, tw.modelOrigin);
 
 	if (!cm.numNodes) {

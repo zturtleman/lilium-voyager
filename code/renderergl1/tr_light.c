@@ -294,6 +294,20 @@ void R_SetupEntityLighting( const trRefdef_t *refdef, trRefEntity_t *ent ) {
 	}
 	ent->lightingCalculated = qtrue;
 
+#ifdef ELITEFORCE
+	if(ent->e.renderfx & RF_FULLBRIGHT)
+	{
+//		ent->ambientLight[0] = ent->ambientLight[1] = ent->ambientLight[1] = 0xFF;
+		((byte *)&ent->ambientLightInt)[0] = 0x7F;
+		((byte *)&ent->ambientLightInt)[1] = 0x7F;
+		((byte *)&ent->ambientLightInt)[2] = 0x7F;
+		((byte *)&ent->ambientLightInt)[3] = 0xFF;
+
+		ent->lightDir[0] = ent->lightDir[1] = ent->lightDir[2] = 0;
+		return;
+	}
+#endif
+
 	//
 	// trace a sample point down to find ambient light
 	//

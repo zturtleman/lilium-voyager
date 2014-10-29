@@ -81,6 +81,12 @@ typedef enum {
 	UI_GETGLCONFIG,
 	UI_GETCLIENTSTATE,
 	UI_GETCONFIGSTRING,
+#ifdef ELITEFORCE
+	UI_LAN_GETLOCALSERVERCOUNT,
+	UI_LAN_GETLOCALSERVERADDRESSSTRING,
+	UI_LAN_GETGLOBALSERVERCOUNT,
+	UI_LAN_GETGLOBALSERVERADDRESSSTRING,
+#endif                                
 	UI_LAN_GETPINGQUEUECOUNT,
 	UI_LAN_CLEARPING,
 	UI_LAN_GETPING,
@@ -88,6 +94,10 @@ typedef enum {
 	UI_CVAR_REGISTER,
 	UI_CVAR_UPDATE,
 	UI_MEMORY_REMAINING,
+#ifdef ELITEFORCE
+	UI_SET_CDKEY,
+	UI_R_MODELBOUNDS,
+#else
 	UI_GET_CDKEY,
 	UI_SET_CDKEY,
 	UI_R_REGISTERFONT,
@@ -124,6 +134,7 @@ typedef enum {
 	// 1.32
 	UI_FS_SEEK,
 	UI_SET_PBCLSTATUS,
+#endif
 
 	UI_MEMSET = 100,
 	UI_MEMCPY,
@@ -182,7 +193,9 @@ typedef enum {
 
 	UI_DRAW_CONNECT_SCREEN,
 //	void	UI_DrawConnectScreen( qboolean overlay );
+#ifndef ELITEFORCE
 	UI_HASUNIQUECDKEY
+#endif
 // if !overlay, the background will be drawn, otherwise it will be
 // overlayed over whatever the cgame has drawn.
 // a GetClientState syscall will be made to get the current strings

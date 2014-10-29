@@ -362,8 +362,10 @@ CL_MouseEvent
 void CL_MouseEvent( int dx, int dy, int time ) {
 	if ( Key_GetCatcher( ) & KEYCATCH_UI ) {
 		VM_Call( uivm, UI_MOUSE_EVENT, dx, dy );
+#ifndef ELITEFORCE
 	} else if (Key_GetCatcher( ) & KEYCATCH_CGAME) {
 		VM_Call (cgvm, CG_MOUSE_EVENT, dx, dy);
+#endif
 	} else {
 		cl.mouseDx[cl.mouseIndex] += dx;
 		cl.mouseDy[cl.mouseIndex] += dy;
@@ -736,7 +738,10 @@ void CL_WritePacket( void ) {
 	usercmd_t	nullcmd;
 	int			packetNum;
 	int			oldPacketNum;
-	int			count, key;
+	int			count;
+	#ifndef ELITEFORCE
+	int			key;
+	#endif
 
 	// don't send anything if playing back a demo
 	if ( clc.demoplaying || clc.state == CA_CINEMATIC ) {
@@ -746,9 +751,21 @@ void CL_WritePacket( void ) {
 	Com_Memset( &nullcmd, 0, sizeof(nullcmd) );
 	oldcmd = &nullcmd;
 
-	MSG_Init( &buf, data, sizeof(data) );
+	#ifdef ELITEFORCE
+	if(clc.compat)
+	{
+		MSG_InitOOB( &buf, data, sizeof(data) );
+		buf.compat = clc.compat;
+	}
+	else
+	{	
+	#endif
+		MSG_Init( &buf, data, sizeof(data) );
+		MSG_Bitstream( &buf );
+	#ifdef ELITEFORCE
+	}
+	#endif
 
-	MSG_Bitstream( &buf );
 	// write the current serverId so the server
 	// can tell if this is from the current gameState
 	MSG_WriteLong( &buf, cl.serverId );
@@ -850,18 +867,24 @@ void CL_WritePacket( void ) {
 		// write the command count
 		MSG_WriteByte( &buf, count );
 
+#ifndef ELITEFORCE
 		// use the checksum feed in the key
 		key = clc.checksumFeed;
 		// also use the message acknowledge
 		key ^= clc.serverMessageSequence;
 		// also use the last acknowledged server command in the key
 		key ^= MSG_HashKey(clc.serverCommands[ clc.serverCommandSequence & (MAX_RELIABLE_COMMANDS-1) ], 32);
+#endif
 
 		// write all the commands, including the predicted command
 		for ( i = 0 ; i < count ; i++ ) {
 			j = (cl.cmdNumber - count + i + 1) & CMD_MASK;
 			cmd = &cl.cmds[j];
+#ifdef ELITEFORCE
+			MSG_WriteDeltaUsercmd (&buf, oldcmd, cmd);
+#else
 			MSG_WriteDeltaUsercmdKey (&buf, key, oldcmd, cmd);
+#endif
 			oldcmd = cmd;
 		}
 	}
@@ -958,6 +981,12 @@ void CL_InitInput( void ) {
 	Cmd_AddCommand ("-button3", IN_Button3Up);
 	Cmd_AddCommand ("+button4", IN_Button4Down);
 	Cmd_AddCommand ("-button4", IN_Button4Up);
+#ifdef ELITEFORCE
+	Cmd_AddCommand ("+altattack", IN_Button5Down);
+	Cmd_AddCommand ("-altattack", IN_Button5Up);
+	Cmd_AddCommand ("+use", IN_Button6Down);
+	Cmd_AddCommand ("-use", IN_Button6Up);
+#endif
 	Cmd_AddCommand ("+button5", IN_Button5Down);
 	Cmd_AddCommand ("-button5", IN_Button5Up);
 	Cmd_AddCommand ("+button6", IN_Button6Down);
@@ -1035,6 +1064,12 @@ void CL_ShutdownInput(void)
 	Cmd_RemoveCommand("-button3");
 	Cmd_RemoveCommand("+button4");
 	Cmd_RemoveCommand("-button4");
+#ifdef ELITEFORCE
+	Cmd_RemoveCommand ("+altattack");
+	Cmd_RemoveCommand ("-altattack");
+	Cmd_RemoveCommand ("+use");
+	Cmd_RemoveCommand ("-use");
+#endif
 	Cmd_RemoveCommand("+button5");
 	Cmd_RemoveCommand("-button5");
 	Cmd_RemoveCommand("+button6");

@@ -375,10 +375,20 @@ sfxHandle_t	S_Base_RegisterSound( const char *name, qboolean compressed ) {
 	sfx->inMemory = qfalse;
 	sfx->soundCompressed = compressed;
 
-  S_memoryLoad(sfx);
+	S_memoryLoad(sfx);
 
 	if ( sfx->defaultSound ) {
+		#ifdef ELITEFORCE
+		int hash = S_HashSFXName(name);
+		// free the slot up.
+		sfx->soundName[0] = '\0';
+		sfx->inMemory = qfalse;
+		sfx->defaultSound = qfalse;
+		// the new entry is head anyways.
+		sfxHash[hash] = sfx->next;
+		#else
 		Com_Printf( S_COLOR_YELLOW "WARNING: could not find %s - using default\n", sfx->soundName );
+		#endif
 		return 0;
 	}
 
@@ -400,7 +410,11 @@ void S_Base_BeginRegistration( void ) {
 		Com_Memset(s_knownSfx, '\0', sizeof(s_knownSfx));
 		Com_Memset(sfxHash, '\0', sizeof(sfx_t *) * LOOP_HASH);
 
+#ifdef ELITEFORCE
+		S_Base_RegisterSound("sound/null.wav", qfalse); // Eliteforce specific sound.
+#else
 		S_Base_RegisterSound("sound/feedback/hit.wav", qfalse);		// changed to a sound in baseq3
+#endif
 	}
 }
 
@@ -1399,9 +1413,11 @@ static void S_OpenBackgroundStream( const char *filename ) {
 		return;
 	}
 
+	#ifndef ELITEFORCE
 	if(s_backgroundStream->info.channels != 2 || s_backgroundStream->info.rate != 22050) {
 		Com_Printf(S_COLOR_YELLOW "WARNING: music file %s is not 22k stereo\n", filename );
 	}
+	#endif
 }
 
 /*

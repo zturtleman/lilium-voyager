@@ -376,7 +376,12 @@ static void S_AL_BufferLoad(sfxHandle_t sfx, qboolean cache)
 	data = S_CodecLoad(curSfx->filename, &info);
 	if(!data)
 	{
+#ifdef ELITEFORCE
+		S_AL_BufferUnload(sfx);
+		*knownSfx[sfx].filename = '\0';
+#else
 		S_AL_BufferUseDefault(sfx);
+#endif
 		return;
 	}
 
@@ -481,7 +486,11 @@ qboolean S_AL_BufferInit( void )
 	numSfx = 0;
 
 	// Load the default sound, and lock it
+#ifdef ELITEFORCE
+	default_sfx = S_AL_BufferFind("sound/null.wav");
+#else
 	default_sfx = S_AL_BufferFind("sound/feedback/hit.wav");
+#endif
 	S_AL_BufferUse(default_sfx);
 	knownSfx[default_sfx].isLocked = qtrue;
 
@@ -529,6 +538,12 @@ sfxHandle_t S_AL_RegisterSound( const char *sample, qboolean compressed )
 
 	if((!knownSfx[sfx].inMemory) && (!knownSfx[sfx].isDefault))
 		S_AL_BufferLoad(sfx, s_alPrecache->integer);
+
+#ifdef ELITEFORCE
+	if(! *knownSfx[sfx].filename)
+        	return 0;
+#endif
+                        
 	knownSfx[sfx].lastUsedTime = Com_Milliseconds();
 
 	if (knownSfx[sfx].isDefault) {

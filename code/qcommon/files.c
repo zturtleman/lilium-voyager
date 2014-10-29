@@ -174,6 +174,15 @@ or configs will never get loaded from disk!
 
 // every time a new demo pk3 file is built, this checksum must be updated.
 // the easiest way to get it is to just run the game and see what it spits out
+#ifdef ELITEFORCE
+static const unsigned pak_checksums[] =
+{
+	3376297517u,
+	596947475u,
+	3960871590u,
+	1592359207u,
+};
+#else
 #define	DEMO_PAK0_CHECKSUM	2985612116u
 static const unsigned int pak_checksums[] = {
 	1566731103u,
@@ -186,6 +195,7 @@ static const unsigned int pak_checksums[] = {
 	908855077u,
 	977125798u
 };
+#endif
 
 static const unsigned int missionpak_checksums[] =
 {
@@ -3078,6 +3088,12 @@ qboolean FS_ComparePaks( char *neededpaks, int len, qboolean dlstring ) {
 		havepak = qfalse;
 
 		// never autodownload any of the id paks
+#ifdef ELITEFORCE
+  #ifndef STANDALONE
+		if(FS_idPak(fs_serverReferencedPakNames[i], BASEGAME, NUM_ID_PAKS))
+			continue;
+  #endif
+#else
 		if(FS_idPak(fs_serverReferencedPakNames[i], BASEGAME, NUM_ID_PAKS)
 #ifndef STANDALONE
 				|| FS_idPak(fs_serverReferencedPakNames[i], BASETA, NUM_TA_PAKS)
@@ -3086,6 +3102,7 @@ qboolean FS_ComparePaks( char *neededpaks, int len, qboolean dlstring ) {
 		{
 			continue;
 		}
+#endif
 
 		// Make sure the server cannot make us write to non-quake3 directories.
 		if(FS_CheckDirTraversal(fs_serverReferencedPakNames[i]))
@@ -3356,6 +3373,7 @@ static void FS_Startup( const char *gameName )
 }
 
 #ifndef STANDALONE
+#ifdef ELITEFORCE
 /*
 ===================
 FS_CheckPak0
@@ -3368,6 +3386,123 @@ Q3 media pak0.pk3, you'll want to remove this by defining
 STANDALONE in q_shared.h
 ===================
 */
+
+static void FS_CheckPak0( void )
+{
+	searchpath_t	*path;
+	pack_t		*curpack;
+	unsigned int foundPak = 0;
+
+	for( path = fs_searchpaths; path; path = path->next )
+	{
+		const char* pakBasename = path->pack->pakBasename;
+
+		if(!path->pack)
+			continue;
+		
+		curpack = path->pack;
+
+		if(!Q_stricmpn( curpack->pakGamename, BASEGAME, MAX_OSPATH )
+			&& strlen(pakBasename) == 4 && !Q_stricmpn( pakBasename, "pak", 3 )
+			&& pakBasename[3] >= '0' && pakBasename[3] <= '0' + NUM_ID_PAKS - 1)
+		{
+			if( curpack->checksum != pak_checksums[pakBasename[3]-'0'] )
+			{
+				if(pakBasename[3] == '0')
+				{
+
+					Com_Printf("\n\n"
+						"**************************************************\n"
+						"WARNING: " BASEGAME "/pak0.pk3 is present but its checksum (%u)\n"
+						"is not correct. Please re-copy pak0.pk3 from your\n"
+						"legitimate EF CDROM.\n"
+						"**************************************************\n\n\n",
+						curpack->checksum );
+				}
+				else
+				{
+					Com_Printf("\n\n"
+						"**************************************************\n"
+						"WARNING: pak%d.pk3 is present but its checksum (%u)\n"
+						"is not correct. Please copy the .pk3 files from\n"
+						"Elite Force patches 1.1 and 1.2 to the baseEF directory.\n"
+						"**************************************************\n\n\n",
+						pakBasename[3]-'0', curpack->checksum );
+				}
+			}
+
+			foundPak |= 1<<(pakBasename[3]-'0');
+		}
+		else
+		{
+			int index;
+			
+			// Finally check whether this pak's checksum is listed because the user tried
+			// to trick us by renaming the file, and set foundPak's highest bit to indicate this case.
+			
+			for(index = 0; index < ARRAY_LEN(pak_checksums); index++)
+			{
+				if(curpack->checksum == pak_checksums[index])
+				{
+					Com_Printf("\n\n"
+						"**************************************************\n"
+						"WARNING: %s is renamed pak file %s%cpak%d.pk3\n"
+						"Running in standalone mode won't work\n"
+						"Please rename, or remove this file\n"
+						"**************************************************\n\n\n",
+						curpack->pakFilename, BASEGAME, PATH_SEP, index);
+
+
+					foundPak |= 0x80000000;
+				}
+			}
+		}
+	}
+
+	if(!foundPak && Q_stricmp(com_basegame->string, BASEGAME))
+	{
+		Cvar_Set("com_standalone", "1");
+	}
+	else
+		Cvar_Set("com_standalone", "0");
+
+	if(!com_standalone->integer && (foundPak & 0x07) != 0x07)
+	{
+		char errorText[MAX_STRING_CHARS] = "";
+
+		if((foundPak & 0x01) != 0x01)
+		{
+			Q_strcat(errorText, sizeof(errorText),
+				"\"pak0.pk3\" is missing. Please copy it "
+				"from your legitimate EliteForce CDROM. ");
+		}
+		if((foundPak & 0x1fe) != 0x1fe)
+		{
+			Q_strcat(errorText, sizeof(errorText),
+				"Patch files are missing. Please\n"
+				"copy the .pk3 files from EliteForce patch 1.2 to baseEF.\n");		}
+
+		Q_strcat(errorText, sizeof(errorText),
+			va("Also check that your EliteForce executable is in "
+			"the correct place and that every file "
+			"in the \"%s\" directory is present and readable", BASEGAME));
+
+		Com_Error(ERR_FATAL, "%s", errorText);
+	}
+}
+
+#else
+
+/*
+===================
+FS_CheckPak0
+
+Checks that pak0.pk3 is present and its checksum is correct
+Note: If you're building a game that doesn't depend on the
+Q3 media pak0.pk3, you'll want to remove this function
+===================
+*/
+
 static void FS_CheckPak0( void )
 {
 	searchpath_t	*path;
@@ -3399,6 +3534,7 @@ static void FS_CheckPak0( void )
 			{
 				if(pakBasename[3] == '0')
 				{
+
 					Com_Printf("\n\n"
 							"**************************************************\n"
 							"WARNING: " BASEGAME "/pak0.pk3 is present but its checksum (%u)\n"
@@ -3515,7 +3651,6 @@ static void FS_CheckPak0( void )
 					"\"pak0.pk3\" is missing. Please copy it "
 					"from your legitimate Q3 CDROM. ");
 		}
-
 		if((foundPak & 0x1fe) != 0x1fe)
 		{
 			Q_strcat(errorText, sizeof(errorText),
@@ -3552,6 +3687,7 @@ static void FS_CheckPak0( void )
 		Com_Error(ERR_FATAL, "%s", errorText);
 	}
 }
+#endif
 #endif
 
 /*
@@ -4091,6 +4227,7 @@ void	FS_FilenameCompletion( const char *dir, const char *ext,
 		callback( filename );
 	}
 	FS_FreeFileList( filenames );
+
 }
 
 const char *FS_GetCurrentGameDir(void)

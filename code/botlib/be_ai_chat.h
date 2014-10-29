@@ -109,5 +109,8 @@ int BotLoadChatFile(int chatstate, char *chatfile, char *chatname);
 //store the gender of the bot in the chat state
 void BotSetChatGender(int chatstate, int gender);
 //store the bot name in the chat state
+#ifdef ELITEFORCE
+void BotSetChatName(int chatstate, char *name);
+#else
 void BotSetChatName(int chatstate, char *name, int client);
-
+#endif

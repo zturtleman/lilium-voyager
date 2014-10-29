@@ -51,7 +51,20 @@ enum {
 	ET_PLAYER,
 	ET_ITEM,
 	ET_MISSILE,
+#ifdef ELITEFORCE
+	ET_ALT_MISSILE,
+	ET_MOVER,
+	ET_BEAM,
+	ET_PORTAL,
+	ET_SPEAKER,
+	ET_PUSH_TRIGGER,
+	ET_TELEPORT_TRIGGER,
+	ET_INVISIBLE,
+	ET_USEABLE,
+	ET_EVENTS
+#else
 	ET_MOVER
+#endif
 };
 
 //===========================================================================

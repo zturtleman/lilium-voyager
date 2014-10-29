@@ -740,6 +740,13 @@ static void Init_EA_Export( ea_export_t *ea ) {
 	ea->EA_Gesture = EA_Gesture;
 	ea->EA_Talk = EA_Talk;
 	ea->EA_Attack = EA_Attack;
+#ifdef ELITEFORCE
+	ea->EA_AltAttack = EA_AltAttack;
+	ea->EA_UseItem = EA_UseItem;
+	ea->EA_DropItem = EA_DropItem;
+	ea->EA_UseInv = EA_UseInv;
+	ea->EA_DropInv = EA_DropInv;
+#endif
 	ea->EA_Use = EA_Use;
 	ea->EA_Respawn = EA_Respawn;
 	ea->EA_Crouch = EA_Crouch;

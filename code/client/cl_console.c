@@ -602,6 +602,21 @@ void Con_DrawNotify (void)
 	// draw the chat line
 	if ( Key_GetCatcher( ) & KEYCATCH_MESSAGE )
 	{
+#ifdef ELITEFORCE
+		if (chat_team)
+		{
+			SCR_DrawSmallString (8, v, "say_team:", 1.0f );
+			skip = 11;
+		}
+		else
+		{
+			SCR_DrawSmallString (8, v, "say:", 1.0f );
+			skip = 6;
+		}
+
+		Field_Draw(&chatField, skip * SMALLCHAR_WIDTH, v,
+			SCREEN_WIDTH - ( skip + 1 ) * SMALLCHAR_WIDTH, qtrue, qtrue);
+#else
 		if (chat_team)
 		{
 			SCR_DrawBigString (8, v, "say_team:", 1.0f, qfalse );
@@ -615,6 +630,7 @@ void Con_DrawNotify (void)
 
 		Field_BigDraw( &chatField, skip * BIGCHAR_WIDTH, v,
 			SCREEN_WIDTH - ( skip + 1 ) * BIGCHAR_WIDTH, qtrue, qtrue );
+#endif
 	}
 
 }
@@ -649,10 +665,18 @@ void Con_DrawSolidConsole( float frac ) {
 
 	// draw the background
 	y = frac * SCREEN_HEIGHT;
+
 	if ( y < 1 ) {
 		y = 0;
 	}
 	else {
+		#ifdef ELITEFORCE
+		color[0] = 0;
+		color[1] = 0;
+		color[2] = 0;
+		color[3] = 0.85;
+		re.SetColor(color);
+		#endif
 		SCR_DrawPic( 0, 0, SCREEN_WIDTH, y, cls.consoleShader );
 	}
 
@@ -661,8 +685,6 @@ void Con_DrawSolidConsole( float frac ) {
 	color[2] = 0;
 	color[3] = 1;
 	SCR_FillRect( 0, y, SCREEN_WIDTH, 2, color );
-
-
 	// draw the version number
 
 	re.SetColor( g_color_table[ColorIndex(COLOR_RED)] );

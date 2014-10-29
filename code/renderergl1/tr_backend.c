@@ -448,10 +448,17 @@ void RB_BeginDrawingView (void) {
 	if ( r_fastsky->integer && !( backEnd.refdef.rdflags & RDF_NOWORLDMODEL ) )
 	{
 		clearBits |= GL_COLOR_BUFFER_BIT;	// FIXME: only if sky shaders have been used
+#ifdef ELITEFORCE
+		if(r_origfastsky->integer)
+			qglClearColor(0.8f, 0.7f, 0.4f, 1.0f);
+		else
+			qglClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+#else
 #ifdef _DEBUG
 		qglClearColor( 0.8f, 0.7f, 0.4f, 1.0f );	// FIXME: get color of sky
 #else
 		qglClearColor( 0.0f, 0.0f, 0.0f, 1.0f );	// FIXME: get color of sky
+#endif
 #endif
 	}
 	qglClear( clearBits );

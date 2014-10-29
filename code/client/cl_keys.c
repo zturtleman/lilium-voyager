@@ -1244,13 +1244,14 @@ void CL_KeyDownEvent( int key, unsigned time )
 			return;
 		}
 
+#ifndef ELITEFORCE
 		// escape always gets out of CGAME stuff
 		if (Key_GetCatcher( ) & KEYCATCH_CGAME) {
 			Key_SetCatcher( Key_GetCatcher( ) & ~KEYCATCH_CGAME );
 			VM_Call (cgvm, CG_EVENT_HANDLING, CGAME_EVENT_NONE);
 			return;
 		}
-
+#endif
 		if ( !( Key_GetCatcher( ) & KEYCATCH_UI ) ) {
 			if ( clc.state == CA_ACTIVE && !clc.demoplaying ) {
 				VM_Call( uivm, UI_SET_ACTIVE_MENU, UIMENU_INGAME );
@@ -1262,8 +1263,11 @@ void CL_KeyDownEvent( int key, unsigned time )
 			}
 			return;
 		}
-
+#ifdef ELITEFORCE
+		VM_Call( uivm, UI_KEY_EVENT, key );
+#else
 		VM_Call( uivm, UI_KEY_EVENT, key, qtrue );
+#endif
 		return;
 	}
 
@@ -1277,10 +1281,12 @@ void CL_KeyDownEvent( int key, unsigned time )
 		if ( uivm ) {
 			VM_Call( uivm, UI_KEY_EVENT, key, qtrue );
 		} 
+#ifndef ELITEFORCE
 	} else if ( Key_GetCatcher( ) & KEYCATCH_CGAME ) {
 		if ( cgvm ) {
 			VM_Call( cgvm, CG_KEY_EVENT, key, qtrue );
 		} 
+#endif
 	} else if ( Key_GetCatcher( ) & KEYCATCH_MESSAGE ) {
 		Message_Key( key );
 	} else if ( clc.state == CA_DISCONNECTED ) {
@@ -1317,11 +1323,13 @@ void CL_KeyUpEvent( int key, unsigned time )
 	//
 	CL_ParseBinding( key, qfalse, time );
 
+#ifndef ELITEFORCE
 	if ( Key_GetCatcher( ) & KEYCATCH_UI && uivm ) {
 		VM_Call( uivm, UI_KEY_EVENT, key, qfalse );
 	} else if ( Key_GetCatcher( ) & KEYCATCH_CGAME && cgvm ) {
 		VM_Call( cgvm, CG_KEY_EVENT, key, qfalse );
 	}
+#endif
 }
 
 /*

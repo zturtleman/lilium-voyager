@@ -45,6 +45,13 @@ void EA_MoveBack(int client);
 void EA_MoveLeft(int client);
 void EA_MoveRight(int client);
 void EA_Attack(int client);
+#ifdef ELITEFORCE
+void EA_AltAttack(int client);
+void EA_UseItem(int client, char *it);
+void EA_DropItem(int client, char *it);
+void EA_UseInv(int client, char *inv);
+void EA_DropInv(int client, char *inv);
+#endif
 void EA_Respawn(int client);
 void EA_Talk(int client);
 void EA_Gesture(int client);

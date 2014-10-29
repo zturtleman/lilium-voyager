@@ -667,7 +667,11 @@ void SV_Init (void)
 	// server vars
 	sv_rconPassword = Cvar_Get ("rconPassword", "", CVAR_TEMP );
 	sv_privatePassword = Cvar_Get ("sv_privatePassword", "", CVAR_TEMP );
+	#ifdef ELITEFORCE
+	sv_fps = Cvar_Get ("sv_fps", "20", CVAR_SYSTEMINFO | CVAR_TEMP);
+	#else
 	sv_fps = Cvar_Get ("sv_fps", "20", CVAR_TEMP );
+	#endif
 	sv_timeout = Cvar_Get ("sv_timeout", "200", CVAR_TEMP );
 	sv_zombietime = Cvar_Get ("sv_zombietime", "2", CVAR_TEMP );
 	Cvar_Get ("nextmap", "", CVAR_TEMP );
@@ -676,8 +680,12 @@ void SV_Init (void)
 	Cvar_Get ("sv_dlURL", "", CVAR_SERVERINFO | CVAR_ARCHIVE);
 	
 	sv_master[0] = Cvar_Get("sv_master1", MASTER_SERVER_NAME, 0);
+	#ifdef ELITEFORCE
+	sv_master[1] = Cvar_Get("sv_master2", "efmaster.tjps.eu", CVAR_ARCHIVE);
+	#else
 	sv_master[1] = Cvar_Get("sv_master2", "master.ioquake3.org", 0);
-	for(index = 2; index < MAX_MASTER_SERVERS; index++)
+	#endif
+	for(index = 1; index < MAX_MASTER_SERVERS; index++)
 		sv_master[index] = Cvar_Get(va("sv_master%d", index + 1), "", CVAR_ARCHIVE);
 
 	sv_reconnectlimit = Cvar_Get ("sv_reconnectlimit", "3", 0);
@@ -723,7 +731,13 @@ void SV_FinalMessage( char *message ) {
 				// don't send a disconnect to a local client
 				if ( cl->netchan.remoteAddress.type != NA_LOOPBACK ) {
 					SV_SendServerCommand( cl, "print \"%s\n\"\n", message );
-					SV_SendServerCommand( cl, "disconnect \"%s\"", message );
+					
+					#ifdef ELITEFORCE
+					if(cl->compat)
+						SV_SendServerCommand(cl, "disconnect Server shutdown: %s", message);
+					else
+					#endif
+						SV_SendServerCommand( cl, "disconnect \"%s\"", message );
 				}
 				// force a snapshot to be sent
 				cl->lastSnapshotTime = 0;

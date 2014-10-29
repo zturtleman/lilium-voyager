@@ -26,6 +26,34 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 static snd_codec_t *codecs;
 
+static void *S_CodecGetSound(const char *filename, snd_info_t *info);
+
+#ifdef ELITEFORCE
+int sem = qtrue;
+#define VOXDIR "sound/voice"
+
+void *S_MangleNameEF(char *filename, snd_info_t *info)
+{
+	char localName[MAX_QPATH];
+
+	if(
+	    !Q_strncmp(filename, VOXDIR, ARRAY_LEN(VOXDIR) - 1) &&
+	    !Q_stricmp(Cvar_VariableString("s_language"), "DEUTSCH")
+	  )
+	{
+		Q_strncpyz(localName, filename, MAX_QPATH - 10);
+	
+		localName[8] = 'x';
+		localName[9] = '_';
+		localName[10] = 'd';
+	
+		return S_CodecGetSound(localName, info);
+	}
+
+	return NULL;
+}
+#endif
+
 /*
 =================
 S_CodecGetSound
@@ -45,6 +73,12 @@ static void *S_CodecGetSound(const char *filename, snd_info_t *info)
 	void		*rtn = NULL;
 
 	Q_strncpyz(localName, filename, MAX_QPATH);
+
+	#ifdef ELITEFORCE
+	rtn = S_MangleNameEF(localName, info);
+	if(rtn)
+		return rtn;
+	#endif
 
 	ext = COM_GetExtension(localName);
 
@@ -110,7 +144,7 @@ static void *S_CodecGetSound(const char *filename, snd_info_t *info)
 		}
 	}
 
-	Com_Printf(S_COLOR_YELLOW "WARNING: Failed to %s sound %s!\n", info ? "load" : "open", filename);
+	Com_DPrintf(S_COLOR_YELLOW "WARNING: Failed to %s sound %s!\n", info ? "load" : "open", filename);
 
 	return NULL;
 }
@@ -166,6 +200,7 @@ void S_CodecRegister(snd_codec_t *codec)
 S_CodecLoad
 =================
 */
+
 void *S_CodecLoad(const char *filename, snd_info_t *info)
 {
 	return S_CodecGetSound(filename, info);

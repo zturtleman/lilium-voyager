@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // tr_noise.c
 #include "tr_common.h"
 
-#define NOISE_SIZE 256
+#define NOISE_SIZE FUNCTABLE_SIZE
 #define NOISE_MASK ( NOISE_SIZE - 1 )
 
 #define VAL( a ) s_noise_perm[ ( a ) & ( NOISE_MASK )]
@@ -30,6 +30,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 static float s_noise_table[NOISE_SIZE];
 static int s_noise_perm[NOISE_SIZE];
+static int s_random[NOISE_SIZE];
 
 static float GetNoiseValue( int x, int y, int z, int t )
 {
@@ -46,6 +47,7 @@ void R_NoiseInit( void )
 	{
 		s_noise_table[i] = ( float ) ( ( ( rand() / ( float ) RAND_MAX ) * 2.0 - 1.0 ) );
 		s_noise_perm[i] = ( unsigned char ) ( rand() / ( float ) RAND_MAX * 255 );
+		s_random[i] = rand() & 0x01;
 	}
 }
 
@@ -88,4 +90,11 @@ float R_NoiseGet4f( float x, float y, float z, float t )
 	finalvalue = LERP( value[0], value[1], ft );
 
 	return finalvalue;
+}
+
+// used in the shader functions (GF_RANDOM) to implement a quasi random flickering.
+#define VALR( a ) s_random[ ( a ) & ( NOISE_MASK )]
+int R_RandomOn(float t)
+{
+	return VALR((unsigned int) floor(t));
 }

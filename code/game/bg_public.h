@@ -263,6 +263,11 @@ typedef enum {
 #define EF_AWARD_DENIED		0x00040000		// denied
 #define EF_TEAMVOTED		0x00080000		// already cast a team vote
 
+#ifdef ELITEFORCE
+#define EF_SHIELD_BOX_X		0x00000800
+#define EF_SHIELD_BOX_Y		0x00400000
+#endif
+
 // NOTE: may not have more than 16
 typedef enum {
 	PW_NONE,

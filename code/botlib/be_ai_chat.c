@@ -2805,9 +2805,16 @@ int BotChatLength(int chatstate)
 void BotEnterChat(int chatstate, int clientto, int sendto)
 {
 	bot_chatstate_t *cs;
-
+	int clientnum;
+	
 	cs = BotChatStateFromHandle(chatstate);
 	if (!cs) return;
+
+	#ifdef ELITEFORCE
+	clientnum = clientto;
+	#else
+	clientnum = cs->client;
+	#endif
 
 	if (strlen(cs->chatmessage))
 	{
@@ -2818,13 +2825,15 @@ void BotEnterChat(int chatstate, int clientto, int sendto)
 		else {
 			switch(sendto) {
 				case CHAT_TEAM:
-					EA_Command(cs->client, va("say_team %s", cs->chatmessage));
+					EA_Command(clientnum, va("say_team %s", cs->chatmessage));
 					break;
+#ifndef ELITEFORCE
 				case CHAT_TELL:
-					EA_Command(cs->client, va("tell %d %s", clientto, cs->chatmessage));
+					EA_Command(clientnum, va("tell %d %s", clientto, cs->chatmessage));
 					break;
+#endif
 				default: //CHAT_ALL
-					EA_Command(cs->client, va("say %s", cs->chatmessage));
+					EA_Command(clientnum, va("say %s", cs->chatmessage));
 					break;
 			}
 		}
@@ -2876,13 +2885,19 @@ void BotSetChatGender(int chatstate, int gender)
 // Returns:					-
 // Changes Globals:		-
 //===========================================================================
+#ifdef ELITEFORCE
+void BotSetChatName(int chatstate, char *name)
+#else
 void BotSetChatName(int chatstate, char *name, int client)
+#endif
 {
 	bot_chatstate_t *cs;
 
 	cs = BotChatStateFromHandle(chatstate);
 	if (!cs) return;
+#ifndef ELITEFORCE
 	cs->client = client;
+#endif
 	Com_Memset(cs->name, 0, sizeof(cs->name));
 	strncpy(cs->name, name, sizeof(cs->name));
 	cs->name[sizeof(cs->name)-1] = '\0';
@@ -2981,11 +2996,13 @@ int BotSetupChatAI(void)
 	file = LibVarString("matchfile", "match.c");
 	matchtemplates = BotLoadMatchTemplates(file);
 	//
+#ifndef ELITEFORCE
 	if (!LibVarValue("nochat", "0"))
 	{
 		file = LibVarString("rchatfile", "rchat.c");
 		replychats = BotLoadReplyChat(file);
 	} //end if
+#endif
 
 	InitConsoleMessageHeap();
 

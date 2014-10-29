@@ -84,7 +84,7 @@ void LAN_SaveServersToCache( void ) {
 	FS_FCloseFile(fileOut);
 }
 
-
+#ifndef ELITEFORCE
 /*
 ====================
 LAN_ResetPings
@@ -204,7 +204,7 @@ static void LAN_RemoveServer(int source, const char *addr) {
 		}
 	}
 }
-
+#endif
 
 /*
 ====================
@@ -226,7 +226,6 @@ static int LAN_GetServerCount( int source ) {
 	}
 	return 0;
 }
-
 /*
 ====================
 LAN_GetLocalServerAddressString
@@ -257,6 +256,7 @@ static void LAN_GetServerAddressString( int source, int n, char *buf, int buflen
 	buf[0] = '\0';
 }
 
+#ifndef ELITEFORCE
 /*
 ====================
 LAN_GetServerInfo
@@ -365,7 +365,6 @@ static serverInfo_t *LAN_GetServerPtr( int source, int n ) {
 	}
 	return NULL;
 }
-
 /*
 ====================
 LAN_CompareServers
@@ -435,6 +434,8 @@ static int LAN_CompareServers( int source, int sortKey, int sortDir, int s1, int
 	return res;
 }
 
+#endif
+
 /*
 ====================
 LAN_GetPingQueueCount
@@ -471,6 +472,7 @@ static void LAN_GetPingInfo( int n, char *buf, int buflen ) {
 	CL_GetPingInfo( n, buf, buflen );
 }
 
+#ifndef ELITEFORCE
 /*
 ====================
 LAN_MarkServerVisible
@@ -548,6 +550,8 @@ static int LAN_ServerIsVisible(int source, int n ) {
 	}
 	return qfalse;
 }
+
+#endif
 
 /*
 =======================
@@ -627,6 +631,7 @@ static void Key_GetBindingBuf( int keynum, char *buf, int buflen ) {
 CLUI_GetCDKey
 ====================
 */
+  #ifndef ELITEFORCE
 static void CLUI_GetCDKey( char *buf, int buflen ) {
 #ifndef STANDALONE
 	cvar_t	*fs;
@@ -642,7 +647,7 @@ static void CLUI_GetCDKey( char *buf, int buflen ) {
 	*buf = 0;
 #endif
 }
-
+  #endif
 
 /*
 ====================
@@ -659,7 +664,12 @@ static void CLUI_SetCDKey( char *buf ) {
 		// set the flag so the fle will be written at the next opportunity
 		cvar_modifiedFlags |= CVAR_ARCHIVE;
 	} else {
+		#ifdef ELITEFORCE
+		Com_Memcpy(cl_cdkey, buf, 22);
+		cl_cdkey[22] = '\0';
+		#else
 		Com_Memcpy( cl_cdkey, buf, 16 );
+		#endif
 		// set the flag so the fle will be written at the next opportunity
 		cvar_modifiedFlags |= CVAR_ARCHIVE;
 	}
@@ -794,8 +804,10 @@ intptr_t CL_UISystemCalls( intptr_t *args ) {
 	case UI_FS_GETFILELIST:
 		return FS_GetFileList( VMA(1), VMA(2), VMA(3), args[4] );
 
+#ifndef ELITEFORCE
 	case UI_FS_SEEK:
 		return FS_Seek( args[1], args[2], args[3] );
+#endif
 	
 	case UI_R_REGISTERMODEL:
 		return re.RegisterModel( VMA(1) );
@@ -902,6 +914,7 @@ intptr_t CL_UISystemCalls( intptr_t *args ) {
 	case UI_GETCONFIGSTRING:
 		return GetConfigString( args[1], VMA(2), args[3] );
 
+#ifndef ELITEFORCE
 	case UI_LAN_LOADCACHEDSERVERS:
 		LAN_LoadCachedServers();
 		return 0;
@@ -916,6 +929,7 @@ intptr_t CL_UISystemCalls( intptr_t *args ) {
 	case UI_LAN_REMOVESERVER:
 		LAN_RemoveServer(args[1], VMA(2));
 		return 0;
+#endif
 
 	case UI_LAN_GETPINGQUEUECOUNT:
 		return LAN_GetPingQueueCount();
@@ -932,13 +946,26 @@ intptr_t CL_UISystemCalls( intptr_t *args ) {
 		LAN_GetPingInfo( args[1], VMA(2), args[3] );
 		return 0;
 
+#ifdef ELITEFORCE
+	case UI_LAN_GETLOCALSERVERCOUNT:
+		return LAN_GetServerCount(AS_LOCAL);
+
+	case UI_LAN_GETLOCALSERVERADDRESSSTRING:
+		LAN_GetServerAddressString( AS_LOCAL, args[1], VMA(2), args[3] );
+		return 0;
+	case UI_LAN_GETGLOBALSERVERCOUNT:
+		return LAN_GetServerCount(AS_GLOBAL);
+
+	case UI_LAN_GETGLOBALSERVERADDRESSSTRING:
+		LAN_GetServerAddressString( AS_GLOBAL, args[1], VMA(2), args[3] );
+		return 0;
+#else
 	case UI_LAN_GETSERVERCOUNT:
 		return LAN_GetServerCount(args[1]);
 
 	case UI_LAN_GETSERVERADDRESSSTRING:
 		LAN_GetServerAddressString( args[1], args[2], VMA(3), args[4] );
 		return 0;
-
 	case UI_LAN_GETSERVERINFO:
 		LAN_GetServerInfo( args[1], args[2], VMA(3), args[4] );
 		return 0;
@@ -965,26 +992,32 @@ intptr_t CL_UISystemCalls( intptr_t *args ) {
 
 	case UI_LAN_COMPARESERVERS:
 		return LAN_CompareServers( args[1], args[2], args[3], args[4], args[5] );
+#endif
 
 	case UI_MEMORY_REMAINING:
 		return Hunk_MemoryRemaining();
 
+  #ifndef ELITEFORCE
 	case UI_GET_CDKEY:
 		CLUI_GetCDKey( VMA(1), args[2] );
 		return 0;
-
+  #endif
 	case UI_SET_CDKEY:
 #ifndef STANDALONE
 		CLUI_SetCDKey( VMA(1) );
+		#ifdef ELITEFORCE
+		return qtrue;
+		#endif
 #endif
 		return 0;
-	
+#ifndef ELITEFORCE
 	case UI_SET_PBCLSTATUS:
 		return 0;	
 
 	case UI_R_REGISTERFONT:
 		re.RegisterFont( VMA(1), args[2], VMA(3));
 		return 0;
+#endif
 
 	case UI_MEMSET:
 		Com_Memset( VMA(1), args[2], args[3] );
@@ -1016,6 +1049,7 @@ intptr_t CL_UISystemCalls( intptr_t *args ) {
 	case UI_CEIL:
 		return FloatAsInt( ceil( VMF(1) ) );
 
+#ifndef ELITEFORCE
 	case UI_PC_ADD_GLOBAL_DEFINE:
 		return botlib_export->PC_AddGlobalDefine( VMA(1) );
 	case UI_PC_LOAD_SOURCE:
@@ -1061,6 +1095,7 @@ intptr_t CL_UISystemCalls( intptr_t *args ) {
 
 	case UI_VERIFY_CDKEY:
 		return CL_CDKeyValidate(VMA(1), VMA(2));
+#endif
 		
 	default:
 		Com_Error( ERR_DROP, "Bad UI system trap: %ld", (long int) args[0] );
@@ -1117,6 +1152,10 @@ void CL_InitUI( void ) {
 //		Com_Printf(S_COLOR_YELLOW "WARNING: loading old Quake III Arena User Interface version %d\n", v );
 		// init for this gamestate
 		VM_Call( uivm, UI_INIT, (clc.state >= CA_AUTHORIZING && clc.state < CA_ACTIVE));
+
+		#ifdef ELITEFORCE
+		Cvar_SetValue("ui_cdkeychecked2", 1);
+		#endif
 	}
 	else if (v != UI_API_VERSION) {
 		// Free uivm now, so UI_SHUTDOWN doesn't get called later.
@@ -1129,16 +1168,24 @@ void CL_InitUI( void ) {
 	else {
 		// init for this gamestate
 		VM_Call( uivm, UI_INIT, (clc.state >= CA_AUTHORIZING && clc.state < CA_ACTIVE) );
+
+		#ifdef ELITEFORCE
+		Cvar_SetValue("ui_cdkeychecked2", 1);
+		#endif
 	}
 }
 
 #ifndef STANDALONE
 qboolean UI_usesUniqueCDKey( void ) {
+#ifdef ELITEFORCE
+	return qfalse;
+#else
 	if (uivm) {
 		return (VM_Call( uivm, UI_HASUNIQUECDKEY) == qtrue);
 	} else {
 		return qfalse;
 	}
+#endif
 }
 #endif
 

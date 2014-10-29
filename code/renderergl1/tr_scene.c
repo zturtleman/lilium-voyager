@@ -304,7 +304,9 @@ void RE_RenderScene( const refdef_t *fd ) {
 		ri.Error (ERR_DROP, "R_RenderScene: NULL worldmodel");
 	}
 
+	#ifndef ELITEFORCE
 	Com_Memcpy( tr.refdef.text, fd->text, sizeof( tr.refdef.text ) );
+	#endif
 
 	tr.refdef.x = fd->x;
 	tr.refdef.y = fd->y;

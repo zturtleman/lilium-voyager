@@ -1099,11 +1099,11 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 			oldStateBits = pStage->stateBits;
 			pStage->alphaGen = AGEN_ENTITY;
 
-			// set bits for blendfunc blend
-			pStage->stateBits = GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA;
-
-			// keep the original alphafunc, if any
-			pStage->stateBits |= ( oldStateBits & GLS_ATEST_BITS );
+			if(backEnd.currentEntity->e.shaderRGBA[3] < 0xFF && !(pStage->stateBits & GLS_ATEST_BITS))
+			{
+				// set bits for blendfunc blend
+				pStage->stateBits = GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA;
+			}
 		}
 		else
 		{

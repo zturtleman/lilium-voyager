@@ -1172,8 +1172,8 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 			#ifdef ELITEFORCE
 			if(overridealpha && backEnd.currentEntity->e.shaderRGBA[3] < 0xFF && !(pStage->stateBits & GLS_ATEST_BITS))
 			{
-				GL_State((pStage->stateBits & ~(GLS_SRCBLEND_BITS | GLS_DSTBLEND_BITS | GLS_ATEST_BITS))  // remove the shader set values.
-					 | GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA | GLS_ATEST_GT_0); // Now add the default values.
+				// set bits for blendfunc blend
+				GL_State( GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA );
 			}
 			else
 			#endif

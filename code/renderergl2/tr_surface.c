@@ -240,19 +240,27 @@ RB_SurfaceSprite
 static void RB_SurfaceSprite( void ) {
 	vec3_t		left, up;
 	float		radius;
+	float		rotation;
 	float			colors[4];
 	trRefEntity_t	*ent = backEnd.currentEntity;
 
 	// calculate the xyz locations for the four corners
-	radius = ent->e.radius;
-	if ( ent->e.rotation == 0 ) {
+	#ifdef ELITEFORCE
+	radius = backEnd.currentEntity->e.data.sprite.radius;
+	rotation = backEnd.currentEntity->e.data.sprite.rotation;
+	#else
+	radius = backEnd.currentEntity->e.radius;
+	rotation = backEnd.currentEntity->e.rotation;
+	#endif
+
+	if ( rotation == 0 ) {
 		VectorScale( backEnd.viewParms.or.axis[1], radius, left );
 		VectorScale( backEnd.viewParms.or.axis[2], radius, up );
 	} else {
 		float	s, c;
 		float	ang;
 		
-		ang = M_PI * ent->e.rotation / 180;
+		ang = M_PI * rotation / 180;
 		s = sin( ang );
 		c = cos( ang );
 
@@ -524,6 +532,580 @@ static void RB_SurfaceTriangles( srfBspSurface_t *srf ) {
 }
 
 
+
+#ifdef ELITEFORCE
+
+/*
+==============
+RB_SurfaceOrientedSprite
+==============
+*/
+static void RB_SurfaceOrientedSprite( void )
+{
+	vec3_t		left, up;
+	float		radius;
+	float		rotation;
+	float			colors[4];
+	trRefEntity_t	*ent = backEnd.currentEntity;
+
+	// calculate the xyz locations for the four corners
+	radius = backEnd.currentEntity->e.data.sprite.radius;
+	rotation = backEnd.currentEntity->e.data.sprite.rotation;
+
+	if (rotation == 0)
+	{
+		VectorScale( backEnd.currentEntity->e.axis[1], radius, left );
+		VectorScale( backEnd.currentEntity->e.axis[2], radius, up );
+	}
+	else
+	{
+		float	s, c;
+		float	ang;
+		
+		ang = M_PI * rotation / 180;
+		s = sin( ang );
+		c = cos( ang );
+
+		VectorScale( backEnd.currentEntity->e.axis[1], c * radius, left );
+		VectorMA( left, -s * radius, backEnd.currentEntity->e.axis[2], left );
+
+		VectorScale( backEnd.currentEntity->e.axis[2], c * radius, up );
+		VectorMA( up, s * radius, backEnd.currentEntity->e.axis[1], up );
+	}
+	if ( backEnd.viewParms.isMirror )
+		VectorSubtract( vec3_origin, left, left );
+
+	VectorScale4(ent->e.shaderRGBA, 1.0f / 255.0f, colors);
+
+	RB_AddQuadStamp( ent->e.origin, left, up, colors );
+}
+
+void RB_Line(vec3_t start, vec3_t end, vec3_t linedirection, vec3_t left,
+	     vec3_t *corners, float starttex, float endtex, refEntity_t *e)
+{
+	int ndx, numind;
+	vec4_t *vertcols;
+
+	RB_CHECKOVERFLOW( 4, 6 );
+
+	// Set up the triangles ..
+	ndx = tess.numVertexes;
+	numind = tess.numIndexes;
+
+	tess.indexes[ numind ] = ndx;
+	tess.indexes[ numind + 1 ] = ndx + 1;
+	tess.indexes[ numind + 2 ] = ndx + 3;
+
+	tess.indexes[ numind + 3 ] = ndx + 3;
+	tess.indexes[ numind + 4 ] = ndx + 1;
+	tess.indexes[ numind + 5 ] = ndx + 2;
+
+	// now create the corner vertices
+
+	if(corners)
+	{
+		// we have the corner points for the start already given.
+		VectorCopy(corners[0], tess.xyz[ndx]);
+		VectorCopy(corners[1], tess.xyz[ndx+1]);
+	}
+	else
+	{
+		// start left corner
+		VectorAdd(start, left, tess.xyz[ndx]);
+		// start right corner
+		VectorSubtract(start, left, tess.xyz[ndx+1]);
+	}
+	// end right corner
+	VectorSubtract(end, left, tess.xyz[ndx+2]);
+	// end left corner
+	VectorAdd(end, left, tess.xyz[ndx+3]);
+	
+	if(corners)
+	{
+		// save the end corner points here.
+		VectorCopy(tess.xyz[ndx+3], corners[0]);
+		VectorCopy(tess.xyz[ndx+2], corners[1]);
+	}
+
+	// Texture stuff....
+	tess.texCoords[ndx][0][0] = 0;
+	tess.texCoords[ndx][0][1] = starttex;
+
+	tess.texCoords[ndx+1][0][0] = 1;
+	tess.texCoords[ndx+1][0][1] = starttex;
+	
+	tess.texCoords[ndx+2][0][0] = 1;
+	tess.texCoords[ndx+2][0][1] = endtex;
+
+	tess.texCoords[ndx+3][0][0] = 0;
+	tess.texCoords[ndx+3][0][1] = endtex;
+
+	vertcols = tess.vertexColors;
+
+	vertcols[ndx][0] = vertcols[ndx+1][0] = vertcols[ndx+2][0] = vertcols[ndx+3][0] = e->shaderRGBA[0] / 255.0f;
+	vertcols[ndx][1] = vertcols[ndx+1][1] = vertcols[ndx+2][1] = vertcols[ndx+3][1] = e->shaderRGBA[1] / 255.0f;
+	vertcols[ndx][2] = vertcols[ndx+1][2] = vertcols[ndx+2][2] = vertcols[ndx+3][2] = e->shaderRGBA[2] / 255.0f;
+	vertcols[ndx][3] = vertcols[ndx+1][3] = vertcols[ndx+2][3] = vertcols[ndx+3][3] = e->shaderRGBA[3] / 255.0f;
+
+	tess.numVertexes += 4;
+	tess.numIndexes += 6;
+
+
+}
+
+// Create a normal vector and scale it to the right length
+void RB_LineNormal(vec3_t vec1, vec3_t vec2, float scale, vec3_t result)
+{
+	// Create the offset vector for the width of the line
+	CrossProduct(vec1, vec2, result);
+	// Normalize the offset vector first.
+	VectorNormalize(result);
+	// Scale the offset vector to the intended width.
+	VectorScale(result, scale / 2, result);
+}
+
+// Let's draw a thick line from A to B and dance happily around a christmas tree!
+void RB_SurfaceLine( void )
+{
+	refEntity_t *e;
+	vec3_t left;		// I vote the green party...
+	vec3_t start, end, linedirection, start2origin;
+	shader_t *surfshader;
+	
+	e = &backEnd.currentEntity->e;
+
+	// Getting up before 1:00 pm to attend HM I lectures finally paid off..
+
+	// Get the start and end point of the line
+	VectorCopy(e->origin, start);
+	VectorCopy(e->oldorigin, end);
+
+	// Direction vector for the line:
+	VectorSubtract(end, start, linedirection);
+	// Direction vector for the start to current point of view
+	VectorSubtract(backEnd.viewParms.or.origin, start, start2origin);
+
+	RB_LineNormal(start2origin, linedirection, e->data.line.width, left);
+	RB_Line(start, end, linedirection, left, NULL, 0, e->data.line.stscale, e); 
+
+	// Hack to make the dreadnought lightning bolt work: set the correct cull type...
+	if((surfshader = R_GetShaderByHandle(e->customShader)))
+		surfshader->cullType = CT_TWO_SIDED;
+}
+
+void RB_SurfaceOrientedLine(void)
+{
+	refEntity_t *e;
+	vec3_t left;
+	vec3_t linedirection;
+	shader_t *surfshader;
+
+	e = &backEnd.currentEntity->e;
+
+	VectorSubtract(e->oldorigin, e->origin, linedirection);
+
+	VectorCopy(e->axis[1], left);
+	VectorNormalize(left);
+	VectorScale(left, e->data.line.width / 2, left);
+	
+	RB_Line(e->origin, e->oldorigin, linedirection, left, NULL, 0, 1, e);
+
+	surfshader = R_GetShaderByHandle(e->customShader);
+	surfshader->cullType = CT_TWO_SIDED;
+
+}
+
+// This time it's not a rectangle but a trapezoid I guess ...
+void RB_SurfaceLine2( void )
+{
+	refEntity_t *e;
+	vec3_t startleft, endleft;		// I still vote the green party...
+	vec3_t start, end, linedirection, start2origin;
+	vec4_t *vertcols;
+	int ndx, numind;
+	
+	RB_CHECKOVERFLOW( 6, 12 );
+	
+	e = &backEnd.currentEntity->e;
+
+	// Set up the triangle ..
+	ndx = tess.numVertexes;
+	numind = tess.numIndexes;
+
+	tess.indexes[ numind ] = ndx;
+	tess.indexes[ numind + 1 ] = ndx + 1;
+	tess.indexes[ numind + 2 ] = ndx + 5;
+	tess.indexes[ numind + 3 ] = ndx + 5;
+	tess.indexes[ numind + 4 ] = ndx + 4;
+	tess.indexes[ numind + 5 ] = ndx + 1;
+	tess.indexes[ numind + 6 ] = ndx + 1;
+	tess.indexes[ numind + 7 ] = ndx + 4;
+	tess.indexes[ numind + 8 ] = ndx + 3;
+	tess.indexes[ numind + 9 ] = ndx + 3;
+	tess.indexes[ numind + 10 ] = ndx + 2;
+	tess.indexes[ numind + 11 ] = ndx + 1;
+
+
+	// Get the start and end point of the line
+	VectorCopy(e->origin, start);
+	VectorCopy(e->oldorigin, end);
+
+	// Direction vector for the line:
+	VectorSubtract(end, start, linedirection);
+	// Direction vector for the start to current point of view
+	VectorSubtract(backEnd.viewParms.or.origin, start, start2origin);
+
+	// Create the offset vector for the width of the line
+	CrossProduct(start2origin, linedirection, startleft);
+	// Normalize the offset vector first.
+	VectorNormalize(startleft);
+	// The normal of the triangle we just thought up:
+
+
+	// Scale the offset vector to the intended width.
+	VectorScale(startleft, e->data.line.width2 / 2, endleft);
+	VectorScale(startleft, e->data.line.width / 2, startleft);
+
+	// now create the corner vertices
+
+	// start left corner
+	VectorAdd(start, startleft, tess.xyz[ndx]);
+	// start point
+	VectorCopy(start, tess.xyz[ndx+1]);
+	// start right corner
+	VectorSubtract(start, startleft, tess.xyz[ndx+2]);
+	// end right corner
+	VectorSubtract(end, endleft, tess.xyz[ndx+3]);
+	// end point
+	VectorCopy(end, tess.xyz[ndx+4]);
+	// end left corner	
+	VectorAdd(end, endleft, tess.xyz[ndx+5]);
+
+	// Texture stuff....
+	tess.texCoords[ndx][0][0] = 0;
+	tess.texCoords[ndx][0][1] = 0;
+
+	tess.texCoords[ndx+1][0][0] = 0.5;
+	tess.texCoords[ndx+1][0][1] = 0;
+	
+	tess.texCoords[ndx+2][0][0] = 1;
+	tess.texCoords[ndx+2][0][1] = 0;
+
+	tess.texCoords[ndx+3][0][0] = 1;
+	tess.texCoords[ndx+3][0][1] = 1;
+
+	tess.texCoords[ndx+4][0][0] = 0.5;
+	tess.texCoords[ndx+4][0][1] = 1;
+
+	tess.texCoords[ndx+5][0][0] = 0;
+	tess.texCoords[ndx+5][0][1] = 1;
+
+	vertcols = tess.vertexColors;
+
+	vertcols[ndx][0] = vertcols[ndx+1][0] = vertcols[ndx+2][0] =
+		vertcols[ndx+3][0] = vertcols[ndx+4][0] = vertcols[ndx+5][0] = e->shaderRGBA[0] / 255.0f;
+	vertcols[ndx][1] = vertcols[ndx+1][1] = vertcols[ndx+2][1] =
+		vertcols[ndx+3][1] = vertcols[ndx+4][1] = vertcols[ndx+5][1] = e->shaderRGBA[1] / 255.0f;
+	vertcols[ndx][2] = vertcols[ndx+1][2] = vertcols[ndx+2][2] =
+		vertcols[ndx+3][2] = vertcols[ndx+4][2] = vertcols[ndx+5][2] = e->shaderRGBA[2] / 255.0f;
+	vertcols[ndx][3] = vertcols[ndx+1][3] = vertcols[ndx+2][3] =
+		vertcols[ndx+3][3] = vertcols[ndx+4][3] = vertcols[ndx+5][3] = e->shaderRGBA[3] / 255.0f;
+
+	tess.numVertexes += 6;
+	tess.numIndexes += 12;
+}
+
+// Draw a cubic bezier curve for the imod weapon.
+#define BEZIER_SEGMENTS 32
+#define BEZIER_STEPSIZE 1.0 / BEZIER_SEGMENTS
+
+void RB_SurfaceBezier(void)
+{
+	refEntity_t *e = &backEnd.currentEntity->e;
+	double tvar = 0, one_tvar; // use double to not lose as much precision on cubing and squaring.
+	float starttc, endtc;
+	vec3_t segstartpos, segendpos, prevend[2];
+	vec3_t linedirection, start2origin, left;
+	int index;
+
+	VectorCopy(e->origin, segstartpos);
+
+	// start of the bezier curve is pointy
+	VectorCopy(segstartpos, prevend[0]);
+	VectorCopy(segstartpos, prevend[1]);
+	
+	// iterate through all segments we have to create.
+	while(tvar <= 1.0)
+	{
+		// get the texture position for the rectangular approximating the bezier curve.
+		starttc = tvar / 2.0;
+		tvar += BEZIER_STEPSIZE;
+		endtc = tvar / 2.0;
+
+		one_tvar = 1.0 - tvar;
+
+		// get the endpoint for this segment.
+
+		for(index = 0; index < 3; index++)
+		{
+			// C(t) = P0 (t-1)^3 + 3 P1 t (t-1)^2 + 3 P2 t^2 (t-1) + P3 t^3
+			segendpos[index] =
+					e->origin[index] * one_tvar * one_tvar * one_tvar +
+					3 * e->data.bezier.control1[index] * tvar * one_tvar * one_tvar +
+					3 * e->data.bezier.control2[index] * tvar * tvar * one_tvar +
+					e->oldorigin[index] * tvar * tvar * tvar;
+		}
+		
+		// Direction vector for the line:
+		VectorSubtract(segendpos, segstartpos, linedirection);
+		// Direction vector for the start to current point of view
+		VectorSubtract(backEnd.viewParms.or.origin, segstartpos, start2origin);
+
+		RB_LineNormal(start2origin, linedirection, e->data.bezier.width, left);
+		RB_Line(segstartpos, segendpos, linedirection, left, prevend, starttc, endtc, e);
+		
+		// Our next segment starts where the old one ends.
+		VectorCopy(segendpos, segstartpos);
+	}
+}
+
+// this actually isn't a cylinder but a frustum, but for the sake of naming
+// conventions we'll keep calling it a cylinder.
+
+// number of rectangles we'll use to approximate a frustum of a cone.
+#define CYLINDER_MAXPLANES 64
+#define LOD_CONSTANT	4.0f
+
+void RB_SurfaceCylinder(void)
+{
+	int planes, index = 0;	// calculate the number of planes based on the level of detail.
+	vec3_t bottom, top, bottom2top, zerodeg_bottom, zerodeg_top, faxis;
+	vec3_t bottomcorner, topcorner, vieworigin;
+	float anglestep, tcstep = 0, width, width2, height;
+	int ndx, numind;
+	vec4_t *vertcols;
+	refEntity_t *e = &backEnd.currentEntity->e;
+	// for LOD calculation:
+	vec3_t bottom2origin, top2origin, lodcalc, projection;
+	float maxradius, startdistance, enddistance, distance;
+
+	height = e->data.cylinder.height;
+	width = e->data.cylinder.width;
+	width2 = e->data.cylinder.width2;
+	maxradius = (width > width2) ? width : width2;
+
+	// get the start and end point of the frustum:
+	
+	VectorCopy(backEnd.viewParms.or.origin, vieworigin);
+	VectorCopy(e->axis[0], faxis);
+	VectorCopy(e->origin, bottom);
+	VectorScale(faxis, height, bottom2top);
+	VectorAdd(bottom, bottom2top, top);
+
+	// Get distance from frustum:
+	// first distance from endpoints
+	VectorSubtract(vieworigin, bottom, bottom2origin);
+	VectorSubtract(vieworigin, top, top2origin);
+	
+	// get projection of view origin on the middle line:
+	distance = DotProduct(bottom2origin, faxis);
+	
+	startdistance = VectorLength(bottom2origin);
+	enddistance = VectorLength(top2origin);
+
+	if(distance < 0 || distance > height)
+	{
+		// projected point is not between bottom and top.
+		distance = (startdistance < enddistance) ? startdistance : enddistance;
+	}
+	else
+	{
+		VectorMA(bottom, distance, faxis, projection);
+		VectorSubtract(vieworigin, projection, lodcalc);
+		distance = VectorLength(lodcalc);
+	
+		if(startdistance < distance)
+			distance = startdistance;
+		if(enddistance < distance)
+			distance = enddistance;
+	}			
+	
+	planes = LOD_CONSTANT * maxradius/distance * CYLINDER_MAXPLANES;
+	
+	if(planes < 8)
+		planes = 8;
+	else if(planes > CYLINDER_MAXPLANES)
+		planes = CYLINDER_MAXPLANES;
+
+	RB_CHECKOVERFLOW(4 * planes, 6 * planes);
+
+	// create a normalized perpendicular vector to the frustum height.
+	PerpendicularVector(zerodeg_bottom, faxis);
+
+	// This vector gets rotated to create the top ring
+	VectorScale(zerodeg_bottom, width2 / 2.0f, zerodeg_top);
+	// Likewise the vector for the lower ring:
+	VectorScale(zerodeg_bottom, width / 2.0f, zerodeg_bottom);
+
+	anglestep = 360.0f / planes;
+	if(e->data.cylinder.wrap)
+		tcstep = e->data.cylinder.stscale / planes;
+	
+	ndx = tess.numVertexes;
+	numind = tess.numIndexes;
+	vertcols = tess.vertexColors;
+
+	// this loop is creating all surface planes.
+	while(index < planes)
+	{
+		index++;
+	
+		// Set up the indexes for the new plane:
+		tess.indexes[numind++] = ndx;
+		tess.indexes[numind++] = ndx + 2;
+		tess.indexes[numind++] = ndx + 3;
+		
+		tess.indexes[numind++] = ndx;
+		tess.indexes[numind++] = ndx + 3;
+		tess.indexes[numind++] = ndx + 1;
+		
+		if(index <= 1)
+		{
+			VectorAdd(bottom, zerodeg_bottom, tess.xyz[ndx]);
+			VectorAdd(top, zerodeg_top, tess.xyz[ndx + 1]);
+		}
+		else
+		{
+			VectorCopy(bottomcorner, tess.xyz[ndx]);
+			VectorCopy(topcorner, tess.xyz[ndx + 1]);
+		}
+
+		// Create on the right side two new vertices, first the bottom, then the top one.
+		if(index >= planes)
+		{
+			VectorAdd(bottom, zerodeg_bottom, bottomcorner);
+			VectorAdd(top, zerodeg_top, topcorner);
+		}
+		else
+		{
+			RotatePointAroundVector(bottomcorner, faxis, zerodeg_bottom, anglestep * index);
+			VectorAdd(bottom, bottomcorner, bottomcorner);
+			RotatePointAroundVector(topcorner, faxis, zerodeg_top, index * anglestep);
+			VectorAdd(top, topcorner, topcorner);
+		}
+		
+		VectorCopy(bottomcorner, tess.xyz[ndx + 2]);
+		VectorCopy(topcorner, tess.xyz[ndx + 3]);
+		
+		// Take care about the texture stuff
+		if(e->data.cylinder.wrap)
+		{
+			tess.texCoords[ndx][0][0] = tcstep * (index - 1);
+			tess.texCoords[ndx][0][1] = 0;
+			
+			tess.texCoords[ndx+1][0][0] = tcstep * (index - 1);
+			tess.texCoords[ndx+1][0][1] = 1;
+
+			tess.texCoords[ndx+2][0][0] = tcstep * index;
+			tess.texCoords[ndx+2][0][1] = 0;
+			
+			tess.texCoords[ndx+3][0][0] = tcstep * index;
+			tess.texCoords[ndx+3][0][1] = 1;
+		}
+		else
+		{
+			tess.texCoords[ndx][0][0] = 0;
+			tess.texCoords[ndx][0][1] = 0;
+			
+			tess.texCoords[ndx+1][0][0] = 0;
+			tess.texCoords[ndx+1][0][1] = 1;
+
+			tess.texCoords[ndx+2][0][0] = e->data.cylinder.stscale;
+			tess.texCoords[ndx+2][0][1] = 0;
+			
+			tess.texCoords[ndx+3][0][0] = e->data.cylinder.stscale;
+			tess.texCoords[ndx+3][0][1] = 1;
+		}
+
+		vertcols[ndx][0] = vertcols[ndx+1][0] = vertcols[ndx+2][0] = vertcols[ndx+3][0] = e->shaderRGBA[0] / 255.0f;
+		vertcols[ndx][1] = vertcols[ndx+1][1] = vertcols[ndx+2][1] = vertcols[ndx+3][1] = e->shaderRGBA[1] / 255.0f;
+		vertcols[ndx][2] = vertcols[ndx+1][2] = vertcols[ndx+2][2] = vertcols[ndx+3][2] = e->shaderRGBA[2] / 255.0f;
+		vertcols[ndx][3] = vertcols[ndx+1][3] = vertcols[ndx+2][3] = vertcols[ndx+3][3] = 1.0f;
+                               
+		ndx += 4;
+	}
+	
+	tess.numVertexes = ndx;
+	tess.numIndexes = numind;	
+}
+
+// Draws lightning using a multisegment line with jumpy connecting points.
+#define ELECTRICITY_SEGMENTS 16
+#define ELECTRICITY_STEPSIZE 1.0 / ELECTRICITY_SEGMENTS
+
+void RB_SurfaceElectricity(void)
+{
+	vec3_t start, end, linedirection, segstartpos, segendpos;
+	vec3_t prevend[2], left, start2origin, start2end;
+	refEntity_t *e = &backEnd.currentEntity->e;
+	float width, deviation, veclen;
+	int index;
+	
+	VectorCopy(e->origin, start);
+	VectorCopy(e->oldorigin, end);
+	VectorSubtract(end, start, start2end);
+	veclen = VectorLength(start2end);
+	
+	width = e->data.electricity.width;
+	deviation = e->data.electricity.deviation;
+
+	VectorCopy(start, segendpos);
+	
+	for(index = 0; index < ELECTRICITY_SEGMENTS; index++)
+	{
+		VectorCopy(segendpos, segstartpos);
+		
+		if(index > ELECTRICITY_SEGMENTS - 2)
+		{
+			// This is the last segment.
+			VectorCopy(end, segendpos);
+		}
+		else
+		{
+			if(index > ELECTRICITY_SEGMENTS - 3)
+			{
+				// The line should have somewhat deviated by now.
+				// Make the last two segments go to the endpoint
+
+				// get the middle point between startpos and endpos
+				VectorAdd(segstartpos, end, segendpos);
+				VectorScale(segendpos, 0.5f, segendpos);
+			}
+
+			// Slightly misplace the next point on the line.
+			segendpos[PITCH] += (start2end[PITCH] + crandom() * deviation * veclen) * ELECTRICITY_STEPSIZE;
+			segendpos[YAW] += (start2end[YAW] + crandom() * deviation * veclen) * ELECTRICITY_STEPSIZE;
+			segendpos[ROLL] += (start2end[ROLL] + crandom() * deviation * veclen / 2.0) * ELECTRICITY_STEPSIZE;
+		}
+
+		// Direction vector for the line:
+		VectorSubtract(segendpos, segstartpos, linedirection);
+		// Direction vector for the start to current point of view
+		VectorSubtract(backEnd.viewParms.or.origin, segstartpos, start2origin);
+		
+		RB_LineNormal(start2origin, linedirection, width, left);
+
+		if(!index)
+		{
+			// this is our first segment, create the starting points
+			VectorAdd(segstartpos, left, prevend[0]);
+			VectorSubtract(segstartpos, left, prevend[1]);
+		}
+		
+		RB_Line(segstartpos, segendpos, linedirection, left, prevend, 0, e->data.electricity.stscale, e);
+	}
+}
+#endif
 
 /*
 ==============
@@ -1485,7 +2067,6 @@ static void RB_SurfaceGrid( srfBspSurface_t *srf ) {
 	}
 }
 
-
 /*
 ===========================================================================
 
@@ -1533,6 +2114,9 @@ Entities that have a single procedurally generated surface
 */
 static void RB_SurfaceEntity( surfaceType_t *surfType ) {
 	switch( backEnd.currentEntity->e.reType ) {
+#ifdef ELITEFORCE
+	case RT_ALPHAVERTPOLY:
+#endif
 	case RT_SPRITE:
 		RB_SurfaceSprite();
 		break;
@@ -1548,6 +2132,29 @@ static void RB_SurfaceEntity( surfaceType_t *surfType ) {
 	case RT_LIGHTNING:
 		RB_SurfaceLightningBolt();
 		break;
+#ifdef ELITEFORCE
+	case RT_ORIENTEDSPRITE:
+		RB_SurfaceOrientedSprite();
+		break;
+	case RT_LINE:
+		RB_SurfaceLine();
+		break;
+	case RT_ORIENTEDLINE:
+		RB_SurfaceOrientedLine();
+		break;
+	case RT_LINE2:
+		RB_SurfaceLine2();
+		break;
+	case RT_BEZIER:
+		RB_SurfaceBezier();
+		break;
+	case RT_CYLINDER:
+		RB_SurfaceCylinder();
+		break;
+	case RT_ELECTRICITY:
+		RB_SurfaceElectricity();
+		break;
+#endif
 	default:
 		RB_SurfaceAxis();
 		break;

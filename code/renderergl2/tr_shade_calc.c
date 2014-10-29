@@ -43,6 +43,8 @@ static float *TableForFunc( genFunc_t func )
 		return tr.sawToothTable;
 	case GF_INVERSE_SAWTOOTH:
 		return tr.inverseSawToothTable;
+	case GF_NOISE:
+		return tr.noiseTable;
 	case GF_NONE:
 	default:
 		break;
@@ -589,7 +591,9 @@ void RB_DeformTessGeometry( void ) {
 		case DEFORM_TEXT5:
 		case DEFORM_TEXT6:
 		case DEFORM_TEXT7:
+#ifndef ELITEFORCE
 			DeformText( backEnd.refdef.text[ds->deformation - DEFORM_TEXT0] );
+#endif
 			break;
 		}
 	}
@@ -613,6 +617,8 @@ float RB_CalcWaveColorSingle( const waveForm_t *wf )
 
 	if ( wf->func == GF_NOISE ) {
 		glow = wf->base + R_NoiseGet4f( 0, 0, 0, ( tess.shaderTime + wf->phase ) * wf->frequency ) * wf->amplitude;
+	} else if( wf->func == GF_RANDOM ) {
+		glow = wf->base + R_RandomOn( (tess.shaderTime + wf->phase) * wf->frequency ) * wf->amplitude;		
 	} else {
 		glow = EvalWaveForm( wf ) * tr.identityLight;
 	}

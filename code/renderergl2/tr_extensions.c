@@ -186,7 +186,9 @@ GLboolean (APIENTRY * qglIsVertexArrayARB)(GLuint array);
 
 static qboolean GLimp_HaveExtension(const char *ext)
 {
-	const char *ptr = Q_stristr( glConfig.extensions_string, ext );
+	// ZTM: FIXME: not elite force specific
+	//const char *ptr = Q_stristr( glConfig.extensions_string, ext );
+	const char *ptr = Q_stristr( (char *) qglGetString (GL_EXTENSIONS), ext );
 	if (ptr == NULL)
 		return qfalse;
 	ptr += strlen(ext);

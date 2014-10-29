@@ -3654,7 +3654,7 @@ void CL_Init( void ) {
 	Cvar_Get ("snaps", "20", CVAR_USERINFO | CVAR_ARCHIVE );
 	Cvar_Get ("model", "munro/red", CVAR_USERINFO | CVAR_ARCHIVE );
 	#ifndef ELITEFORCE
-	Cvar_Get ("headmodel", "munro", CVAR_USERINFO | CVAR_ARCHIVE );
+	Cvar_Get ("headmodel", "sarge", CVAR_USERINFO | CVAR_ARCHIVE );
 	Cvar_Get ("team_model", "james", CVAR_USERINFO | CVAR_ARCHIVE );
 	Cvar_Get ("team_headmodel", "*james", CVAR_USERINFO | CVAR_ARCHIVE );
 	Cvar_Get ("g_redTeam", "Stroggs", CVAR_SERVERINFO | CVAR_ARCHIVE);

@@ -31,8 +31,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <winsock.h>
 #endif
 
-#ifdef ELITEFORCE
 int demo_protocols[] =
+#ifdef ELITEFORCE
 { 0 };
 #else
 { 67, 66, 0 };
@@ -82,7 +82,6 @@ cvar_t	*com_version;
 cvar_t	*com_blood;
 cvar_t	*com_buildScript;	// for automated data building scripts
 cvar_t	*com_introPlayed;
-cvar_t  *com_novmcompat;	// set to 1 to indicate VMs are run by the new engine.
 cvar_t	*cl_paused;
 cvar_t	*sv_paused;
 cvar_t  *cl_packetdelay;
@@ -2843,7 +2842,7 @@ void Com_Init( char *commandLine ) {
 	Cvar_Get("com_errorMessage", "", CVAR_ROM | CVAR_NORESTART);
 
 	com_introPlayed = Cvar_Get( "com_introplayed", "0", CVAR_ARCHIVE);
-	com_novmcompat = Cvar_Get( "com_novmcompat", "1", CVAR_ROM);
+	Cvar_Get( "com_novmcompat", "1", CVAR_ROM); // set to 1 to indicate VMs are run by the new engine.
 
 	s = va("%s %s %s", Q3_VERSION, PLATFORM_STRING, __DATE__ );
 	com_version = Cvar_Get ("version", s, CVAR_ROM | CVAR_SERVERINFO );

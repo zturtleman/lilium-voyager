@@ -23,10 +23,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #ifndef _QCOMMON_H_
 #define _QCOMMON_H_
 
-#if defined(ELITEFORCE) && defined(MISSIONPACK)
-	#undef MISSIONPACK
-#endif
-
 #include "../qcommon/cm_public.h"
 
 //Ignore __attribute__ on non-gcc platforms
@@ -633,10 +629,8 @@ issues.
 #define FS_UI_REF		0x02
 #define FS_CGAME_REF	0x04
 // number of id paks that will never be autodownloaded from baseq3/missionpack
-#ifdef ELITEFORCE
 #define NUM_ID_PAKS		9
-#else
-#define NUM_ID_PAKS		9
+#ifndef ELITEFORCE
 #define NUM_TA_PAKS		4
 #endif
 

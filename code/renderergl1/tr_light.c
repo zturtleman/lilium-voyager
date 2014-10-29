@@ -297,7 +297,7 @@ void R_SetupEntityLighting( const trRefdef_t *refdef, trRefEntity_t *ent ) {
 #ifdef ELITEFORCE
 	if(ent->e.renderfx & RF_FULLBRIGHT)
 	{
-//		ent->ambientLight[0] = ent->ambientLight[1] = ent->ambientLight[1] = 0xFF;
+		ent->ambientLight[0] = ent->ambientLight[1] = ent->ambientLight[2] = 0x7F;
 		((byte *)&ent->ambientLightInt)[0] = 0x7F;
 		((byte *)&ent->ambientLightInt)[1] = 0x7F;
 		((byte *)&ent->ambientLightInt)[2] = 0x7F;

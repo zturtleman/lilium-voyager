@@ -60,8 +60,13 @@ properly.
 */
 
 
+#ifdef ELITEFORCE
 #define	MAX_FACETS			4096
 #define	MAX_PATCH_PLANES	8192
+#else
+#define	MAX_FACETS			1024
+#define	MAX_PATCH_PLANES	2048
+#endif
 
 typedef struct {
 	float	plane[4];

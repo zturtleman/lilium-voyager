@@ -147,11 +147,7 @@ void SV_GetChallenge(netadr_t from)
 #ifndef STANDALONE
 	// Drop the authorize stuff if this client is coming in via v6 as the auth server does not support ipv6.
 	// Drop also for addresses coming in on local LAN and for stand-alone games independent from id's assets.
-#ifdef ELITEFORCE
 	if(challenge->adr.type == NA_IP && !com_standalone->integer && !Sys_IsLANAddress(from))
-#else
-	if(challenge->adr.type == NA_IP && !com_standalone->integer && !Sys_IsLANAddress(from))
-#endif
 	{
 		// look up the authorize server's IP
 		if (svs.authorizeAddress.type == NA_BAD)
@@ -970,9 +966,6 @@ Fill up msg with data, return number of download blocks added
 int SV_WriteDownloadToClient(client_t *cl, msg_t *msg)
 {
 	int curindex;
-#ifndef ELITEFORCE
-	int missionPack = 0;
-#endif
 	int unreferenced = 1;
 	char errorMessage[1024];
 	char pakbuf[MAX_QPATH], *pakptr;
@@ -1018,7 +1011,7 @@ int SV_WriteDownloadToClient(client_t *cl, msg_t *msg)
 						// check whether it's legal to download it.
 #ifndef STANDALONE
 						#ifdef ELITEFORCE
-						idPack = FS_idPak(pakbuf, BASEGAME, NUM_ID_PAKS);
+						idPack = qfalse;
 						#else
 						missionPack = FS_idPak(pakbuf, BASETA, NUM_TA_PAKS);
 						idPack = missionPack;

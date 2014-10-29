@@ -375,7 +375,7 @@ sfxHandle_t	S_Base_RegisterSound( const char *name, qboolean compressed ) {
 	sfx->inMemory = qfalse;
 	sfx->soundCompressed = compressed;
 
-	S_memoryLoad(sfx);
+  S_memoryLoad(sfx);
 
 	if ( sfx->defaultSound ) {
 		#ifdef ELITEFORCE

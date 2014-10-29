@@ -2806,7 +2806,7 @@ void BotEnterChat(int chatstate, int clientto, int sendto)
 {
 	bot_chatstate_t *cs;
 	int clientnum;
-	
+
 	cs = BotChatStateFromHandle(chatstate);
 	if (!cs) return;
 

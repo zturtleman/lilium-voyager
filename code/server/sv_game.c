@@ -339,6 +339,7 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 	case G_FS_SEEK:
 		return FS_Seek( args[1], args[2], args[3] );
 #endif
+
 	case G_LOCATE_GAME_DATA:
 		SV_LocateGameData( VMA(1), args[2], args[3], VMA(4), args[5] );
 		return 0;
@@ -435,6 +436,7 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 		Q_SnapVector(VMA(1));
 		return 0;
 #endif
+
 		//====================================
 
 	case BOTLIB_SETUP:
@@ -461,6 +463,7 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 	case BOTLIB_PC_SOURCE_FILE_AND_LINE:
 		return botlib_export->PC_SourceFileAndLine( args[1], VMA(2), VMA(3) );
 #endif
+
 	case BOTLIB_START_FRAME:
 		return botlib_export->BotLibStartFrame( VMF(1) );
 	case BOTLIB_LOAD_MAP:
@@ -477,6 +480,7 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 	case BOTLIB_USER_COMMAND:
 		SV_ClientThink( &svs.clients[args[1]], VMA(2) );
 		return 0;
+
 #ifndef ELITEFORCE
 	case BOTLIB_AAS_BBOX_AREAS:
 		return botlib_export->aas.AAS_BBoxAreas( VMA(1), VMA(2), VMA(3), args[4] );
@@ -530,6 +534,7 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 	case BOTLIB_AAS_PREDICT_ROUTE:
 		return botlib_export->aas.AAS_PredictRoute( VMA(1), args[2], VMA(3), args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11] );
 #endif
+
 	case BOTLIB_AAS_SWIMMING:
 		return botlib_export->aas.AAS_Swimming( VMA(1) );
 	case BOTLIB_AAS_PREDICT_CLIENT_MOVEMENT:
@@ -877,6 +882,7 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 		botlib_export->ea.EA_Attack( args[1] );
 		return 0;
 #endif
+
 	default:
 		Com_Error( ERR_DROP, "Bad game system trap: %ld", (long int) args[0] );
 	}

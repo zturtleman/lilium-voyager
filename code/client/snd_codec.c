@@ -200,7 +200,6 @@ void S_CodecRegister(snd_codec_t *codec)
 S_CodecLoad
 =================
 */
-
 void *S_CodecLoad(const char *filename, snd_info_t *info)
 {
 	return S_CodecGetSound(filename, info);

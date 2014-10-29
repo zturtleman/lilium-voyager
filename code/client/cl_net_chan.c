@@ -37,7 +37,6 @@ CL_Netchan_Encode
 
 ==============
 */
-
 static void CL_Netchan_Encode( msg_t *msg ) {
 	int serverId, messageAcknowledge, reliableAcknowledge;
 	int i, index, srdc, sbit, soob;
@@ -92,7 +91,6 @@ CL_Netchan_Decode
 
 ==============
 */
-
 static void CL_Netchan_Decode( msg_t *msg ) {
 	long reliableAcknowledge, i, index;
 	byte key, *string;
@@ -186,6 +184,7 @@ qboolean CL_Netchan_Process( netchan_t *chan, msg_t *msg ) {
 	ret = Netchan_Process( chan, msg );
 	if (!ret)
 		return qfalse;
+
 #ifndef ELITEFORCE
 #ifdef LEGACY_PROTOCOL
 	if(chan->compat)

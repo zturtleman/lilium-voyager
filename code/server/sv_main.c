@@ -320,6 +320,7 @@ void SV_MasterHeartbeat(const char *message)
 
 		// this command should be changed if the server info / status format
 		// ever incompatably changes
+
 		#ifdef ELITEFORCE
 		if(adr[i][0].type != NA_BAD)
 			NET_OutOfBandPrint(NS_SERVER, adr[i][0], "\\heartbeat\\%d\\gamename\\%s\\",

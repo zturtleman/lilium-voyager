@@ -24,7 +24,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define __TR_TYPES_H
 
 
-#define	MAX_DLIGHTS		32			// can't be increased, because bit flags are used on surfaces
+#define	MAX_DLIGHTS		32		// can't be increased, because bit flags are used on surfaces
 
 #define	REFENTITYNUM_BITS	10		// can't be increased without changing drawsurf bit packing
 #define	REFENTITYNUM_MASK	((1<<REFENTITYNUM_BITS) - 1)
@@ -46,15 +46,15 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 						// projection matrix won't be hacked to reduce the stereo separation as
 						// is done for the gun.
 #else
-#define RF_CROSSHAIR            0x0010
+#define RF_CROSSHAIR		0x0010
 #endif
 
 #define	RF_NOSHADOW		0x0040		// don't add stencil shadows
 
 #define RF_LIGHTING_ORIGIN	0x0080		// use refEntity->lightingOrigin instead of refEntity->origin
-									// for lighting.  This allows entities to sink into the floor
-									// with their origin going solid, and allows all parts of a
-									// player to get the same lighting
+						// for lighting.  This allows entities to sink into the floor
+						// with their origin going solid, and allows all parts of a
+						// player to get the same lighting
 
 #define	RF_SHADOW_PLANE		0x0100		// use refEntity->shadowPlane
 #define	RF_WRAP_FRAMES		0x0200		// mod the model frames by the maxframes to allow continuous
@@ -65,8 +65,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #endif
 
 // refdef flags
-#define RDF_NOWORLDMODEL	1		// used for player configuration screen
-#define RDF_HYPERSPACE		4		// teleportation effect
+#define RDF_NOWORLDMODEL	0x0001		// used for player configuration screen
+#define RDF_HYPERSPACE		0x0004		// teleportation effect
 
 typedef struct {
 	vec3_t		xyz;
@@ -82,23 +82,23 @@ typedef struct poly_s {
 
 #ifdef ELITEFORCE
 typedef enum {
-        RT_MODEL,
-        RT_SPRITE,
-        RT_ORIENTEDSPRITE,              // Replaces RT_POLY, which wasn't used. --Pat
-        RT_ALPHAVERTPOLY,               // Individual alpha levels on each vertex
-        RT_BEAM,
-        RT_RAIL_CORE,
-        RT_RAIL_RINGS,
-        RT_LIGHTNING,
-        RT_PORTALSURFACE,               // doesn't draw anything, just info for portals
-        RT_LINE,                                // New type for Trek MP --Pat
-        RT_ORIENTEDLINE,
-        RT_LINE2,                               // New line type for Trek MP, with taper support --Pat
-        RT_BEZIER,                              // what he said --keith
-        RT_CYLINDER,                    // Yet another Trek primitive!
-        RT_ELECTRICITY,                 // Yet another Trek primitive!
+	RT_MODEL,
+	RT_SPRITE,
+	RT_ORIENTEDSPRITE,		// Replaces RT_POLY, which wasn't used. --Pat
+	RT_ALPHAVERTPOLY,		// Individual alpha levels on each vertex
+	RT_BEAM,
+	RT_RAIL_CORE,
+	RT_RAIL_RINGS,
+	RT_LIGHTNING,
+	RT_PORTALSURFACE,		// doesn't draw anything, just info for portals
+	RT_LINE,				// New type for Trek MP --Pat
+	RT_ORIENTEDLINE,
+	RT_LINE2,				// New line type for Trek MP, with taper support --Pat
+	RT_BEZIER,				// what he said --keith
+	RT_CYLINDER,			// Yet another Trek primitive!
+	RT_ELECTRICITY,			// Yet another Trek primitive!
 
-        RT_MAX_REF_ENTITY_TYPE
+	RT_MAX_REF_ENTITY_TYPE
 } refEntityType_t;
 #else
 typedef enum {
@@ -147,44 +147,44 @@ typedef struct {
 
 	// extra sprite information
 #ifdef ELITEFORCE
-        union
-        {
-                struct
-                {
-                        float rotation;
-                        float radius;
-                        byte  vertRGBA[4][4];
-                } sprite;
-                struct
-                {
-                        float width;
-                        float width2;
-                        float stscale;
-                } line;
-                struct  // that whole put-the-opening-brace-on-the-same-line-as-the-beginning-of-the-definition coding style is fecal // I agree.
-                {
-                        float   width;
-                        vec3_t  control1;
-                        vec3_t  control2;
-                } bezier;
-                struct
-                {
-                        float width;
-                        float width2;
-                        float stscale;
-                        float height;
-                        float bias;
-                        qboolean wrap;
-                } cylinder;
-                struct
-                {
-                        float width;
-                        float deviation;
-                        float stscale;
-                        qboolean wrap;
-                        qboolean taper;
-                } electricity;
-        } data;
+	union
+	{
+		struct
+		{
+			float rotation;
+			float radius;
+			byte  vertRGBA[4][4];
+		} sprite;
+		struct
+		{
+			float width;
+			float width2;
+			float stscale;
+		} line;
+		struct  // that whole put-the-opening-brace-on-the-same-line-as-the-beginning-of-the-definition coding style is fecal // I agree.
+		{
+			float   width;
+			vec3_t  control1;
+			vec3_t  control2;
+		} bezier;
+		struct
+		{
+			float width;
+			float width2;
+			float stscale;
+			float height;
+			float bias;
+			qboolean wrap;
+		} cylinder;
+		struct
+		{
+			float width;
+			float deviation;
+			float stscale;
+			qboolean wrap;
+			qboolean taper;
+		} electricity;
+	} data;
 #else
 	float		radius;
 	float		rotation;

@@ -114,3 +114,4 @@ void BotSetChatName(int chatstate, char *name);
 #else
 void BotSetChatName(int chatstate, char *name, int client);
 #endif
+

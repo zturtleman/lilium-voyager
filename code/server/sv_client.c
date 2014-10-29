@@ -179,14 +179,14 @@ void SV_GetChallenge(netadr_t from)
 			Com_DPrintf( "authorize server timed out\n" );
 		else
 		{
+			// otherwise send their ip to the authorize server
 #ifndef ELITEFORCE
 			cvar_t	*fs;
 			char	game[1024];
 #endif
 
 			Com_DPrintf( "sending getIpAuthorize for %s\n", NET_AdrToString( from ));
-
-			// otherwise send their ip to the authorize server
+		
 #ifdef ELITEFORCE
 			NET_OutOfBandPrint( NS_SERVER, svs.authorizeAddress,
 				"getIpAuthorize %i %i.%i.%i.%i ",  challenge->challenge,
@@ -204,6 +204,7 @@ void SV_GetChallenge(netadr_t from)
 				"getIpAuthorize %i %i.%i.%i.%i %s 0 %s",  challenge->challenge,
 				from.ip[0], from.ip[1], from.ip[2], from.ip[3], game, sv_strictAuth->string );
 #endif
+			
 			return;
 		}
 	}
@@ -553,7 +554,6 @@ gotnewcl:
 	clientNum = newcl - svs.clients;
 	ent = SV_GentityNum( clientNum );
 	newcl->gentity = ent;
-
 
 	// save the challenge
 	newcl->challenge = challenge;
@@ -2043,7 +2043,7 @@ void SV_ExecuteClientMessage( client_t *cl, msg_t *msg ) {
 		c = MSG_ReadByte( msg );
 
 		#ifdef ELITEFORCE
-		if(msg->compat && c == -1)
+		if ( msg->compat && c == -1 )
 			c = clc_EOF;
 		#endif
 		if ( c == clc_EOF )

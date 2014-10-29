@@ -549,11 +549,11 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 		return S_RegisterSound( VMA(1), args[2] );
 	case CG_S_STARTBACKGROUNDTRACK:
 #ifdef ELITEFORCE
-		if(!VMA(1) || !*((char *) VMA(1)))
+		if ( !VMA(1) || !*((char *) VMA(1)) )
 			S_StopBackgroundTrack();
 		else
 #endif
-			S_StartBackgroundTrack(VMA(1), VMA(2));
+			S_StartBackgroundTrack( VMA(1), VMA(2) );
 		return 0;
 	case CG_R_LOADWORLDMAP:
 		re.LoadWorld( VMA(1) );
@@ -645,6 +645,7 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 #endif
 
 
+
 	case CG_MEMSET:
 		Com_Memset( VMA(1), args[2], args[3] );
 		return 0;
@@ -669,6 +670,7 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 #ifndef ELITEFORCE
 	case CG_ACOS:
 		return FloatAsInt( Q_acos( VMF(1) ) );
+
 	case CG_PC_ADD_GLOBAL_DEFINE:
 		return botlib_export->PC_AddGlobalDefine( VMA(1) );
 	case CG_PC_LOAD_SOURCE:
@@ -732,6 +734,7 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 	case CG_CVAR_SET_NO_MODIFY:
 		return qfalse;
 #endif
+
 	default:
 	        assert(0);
 		Com_Error( ERR_DROP, "Bad cgame system trap: %ld", (long int) args[0] );

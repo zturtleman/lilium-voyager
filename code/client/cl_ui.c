@@ -84,6 +84,7 @@ void LAN_SaveServersToCache( void ) {
 	FS_FCloseFile(fileOut);
 }
 
+
 #ifndef ELITEFORCE
 /*
 ====================
@@ -206,6 +207,7 @@ static void LAN_RemoveServer(int source, const char *addr) {
 }
 #endif
 
+
 /*
 ====================
 LAN_GetServerCount
@@ -226,6 +228,7 @@ static int LAN_GetServerCount( int source ) {
 	}
 	return 0;
 }
+
 /*
 ====================
 LAN_GetLocalServerAddressString
@@ -365,6 +368,7 @@ static serverInfo_t *LAN_GetServerPtr( int source, int n ) {
 	}
 	return NULL;
 }
+
 /*
 ====================
 LAN_CompareServers
@@ -631,7 +635,7 @@ static void Key_GetBindingBuf( int keynum, char *buf, int buflen ) {
 CLUI_GetCDKey
 ====================
 */
-  #ifndef ELITEFORCE
+#ifndef ELITEFORCE
 static void CLUI_GetCDKey( char *buf, int buflen ) {
 #ifndef STANDALONE
 	cvar_t	*fs;
@@ -647,7 +651,8 @@ static void CLUI_GetCDKey( char *buf, int buflen ) {
 	*buf = 0;
 #endif
 }
-  #endif
+#endif
+
 
 /*
 ====================
@@ -966,6 +971,7 @@ intptr_t CL_UISystemCalls( intptr_t *args ) {
 	case UI_LAN_GETSERVERADDRESSSTRING:
 		LAN_GetServerAddressString( args[1], args[2], VMA(3), args[4] );
 		return 0;
+
 	case UI_LAN_GETSERVERINFO:
 		LAN_GetServerInfo( args[1], args[2], VMA(3), args[4] );
 		return 0;
@@ -1002,6 +1008,7 @@ intptr_t CL_UISystemCalls( intptr_t *args ) {
 		CLUI_GetCDKey( VMA(1), args[2] );
 		return 0;
   #endif
+
 	case UI_SET_CDKEY:
 #ifndef STANDALONE
 		CLUI_SetCDKey( VMA(1) );
@@ -1010,6 +1017,7 @@ intptr_t CL_UISystemCalls( intptr_t *args ) {
 		#endif
 #endif
 		return 0;
+	
 #ifndef ELITEFORCE
 	case UI_SET_PBCLSTATUS:
 		return 0;	

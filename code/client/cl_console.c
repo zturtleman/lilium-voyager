@@ -665,7 +665,6 @@ void Con_DrawSolidConsole( float frac ) {
 
 	// draw the background
 	y = frac * SCREEN_HEIGHT;
-
 	if ( y < 1 ) {
 		y = 0;
 	}
@@ -685,6 +684,8 @@ void Con_DrawSolidConsole( float frac ) {
 	color[2] = 0;
 	color[3] = 1;
 	SCR_FillRect( 0, y, SCREEN_WIDTH, 2, color );
+
+
 	// draw the version number
 
 	re.SetColor( g_color_table[ColorIndex(COLOR_RED)] );

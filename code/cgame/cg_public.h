@@ -172,9 +172,10 @@ typedef enum {
 	CG_GETCAMERAINFO,
 */
 #else
-        CG_R_REGISTERSHADER3D,  //59
-        CG_CVAR_SET_NO_MODIFY,  // 60
-#endif      
+	CG_R_REGISTERSHADER3D,  //59
+	CG_CVAR_SET_NO_MODIFY,  // 60
+#endif
+
 	CG_MEMSET = 100,
 	CG_MEMCPY,
 	CG_STRNCPY,
@@ -231,6 +232,7 @@ typedef enum {
 
 	CG_LAST_ATTACKER,
 //	int (*CG_LastAttacker)( void );
+
 #ifndef ELITEFORCE
 	CG_KEY_EVENT, 
 //	void	(*CG_KeyEvent)( int key, qboolean down );

@@ -134,6 +134,7 @@ static void SV_Netchan_Decode( client_t *client, msg_t *msg ) {
 #endif
 
 
+
 /*
 =================
 SV_Netchan_FreeQueue
@@ -273,12 +274,14 @@ qboolean SV_Netchan_Process( client_t *client, msg_t *msg ) {
 	ret = Netchan_Process( &client->netchan, msg );
 	if (!ret)
 		return qfalse;
+
 #ifndef ELITEFORCE
 #ifdef LEGACY_PROTOCOL
 	if(client->compat)
 		SV_Netchan_Decode(client, msg);
 #endif
 #endif
+
 	return qtrue;
 }
 

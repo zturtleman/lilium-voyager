@@ -731,7 +731,7 @@ void SV_FinalMessage( char *message ) {
 				// don't send a disconnect to a local client
 				if ( cl->netchan.remoteAddress.type != NA_LOOPBACK ) {
 					SV_SendServerCommand( cl, "print \"%s\n\"\n", message );
-					
+
 					#ifdef ELITEFORCE
 					if(cl->compat)
 						SV_SendServerCommand(cl, "disconnect Server shutdown: %s", message);

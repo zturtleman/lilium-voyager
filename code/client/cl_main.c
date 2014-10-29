@@ -733,7 +733,6 @@ void CL_Record_f( void ) {
 	if ( Cmd_Argc() == 2 ) {
 		s = Cmd_Argv(1);
 		Q_strncpyz( demoName, s, sizeof( demoName ) );
-
 #ifdef LEGACY_PROTOCOL
 		if(clc.compat)
   #ifdef ELITEFORCE
@@ -1041,7 +1040,7 @@ static int CL_WalkDemoExt(char *arg, char *name, int *demofile)
 {
 	int i = 0;
 	*demofile = 0;
-	
+
 #ifdef LEGACY_PROTOCOL
 	if(com_legacyprotocol->integer > 0)
 	{
@@ -2432,7 +2431,7 @@ void CL_CheckForResend( void ) {
 		data[10+i] = 0;
 
     // NOTE TTimo don't forget to set the right data length!
-    		#ifdef ELITEFORCE
+		#ifdef ELITEFORCE
 			NET_OutOfBandPrint( NS_CLIENT, clc.serverAddress, "%s", data);
 		#else
 			NET_OutOfBandData( NS_CLIENT, clc.serverAddress, (byte *) &data[0], i+10 );
@@ -2603,6 +2602,7 @@ void CL_ServersResponsePacket( const netadr_t* from, msg_t *msg, qboolean extend
 		addresses[numservers].port += *buffptr++;
 		addresses[numservers].port = BigShort( addresses[numservers].port );
 #endif
+
 		// syntax check
 		if (*buffptr != '\\' && *buffptr != '/')
 			break;
@@ -2881,7 +2881,7 @@ void CL_PacketEvent( netadr_t from, msg_t *msg ) {
 	#ifdef ELITEFORCE
 	msg->compat = clc.compat;
 	#endif
-	
+
 	if ( msg->cursize >= 4 && *(int *)msg->data == -1 ) {
 		CL_ConnectionlessPacket( from, msg );
 		return;
@@ -4253,7 +4253,7 @@ void CL_GlobalServers_f( void ) {
 	// -1 is used to distinguish a "no response"
 
 	i = NET_StringToAdr(masteraddress, &to, NA_UNSPEC);
-
+	
 	if(!i)
 	{
 		Com_Printf( "CL_GlobalServers_f: Error: could not resolve address of master %s\n", masteraddress);

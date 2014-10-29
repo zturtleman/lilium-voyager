@@ -540,10 +540,10 @@ sfxHandle_t S_AL_RegisterSound( const char *sample, qboolean compressed )
 		S_AL_BufferLoad(sfx, s_alPrecache->integer);
 
 #ifdef ELITEFORCE
-	if(! *knownSfx[sfx].filename)
-        	return 0;
+	if (!*knownSfx[sfx].filename)
+		return 0;
 #endif
-                        
+
 	knownSfx[sfx].lastUsedTime = Com_Milliseconds();
 
 	if (knownSfx[sfx].isDefault) {

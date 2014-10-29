@@ -1252,6 +1252,7 @@ void CL_KeyDownEvent( int key, unsigned time )
 			return;
 		}
 #endif
+
 		if ( !( Key_GetCatcher( ) & KEYCATCH_UI ) ) {
 			if ( clc.state == CA_ACTIVE && !clc.demoplaying ) {
 				VM_Call( uivm, UI_SET_ACTIVE_MENU, UIMENU_INGAME );
@@ -1263,6 +1264,7 @@ void CL_KeyDownEvent( int key, unsigned time )
 			}
 			return;
 		}
+
 #ifdef ELITEFORCE
 		VM_Call( uivm, UI_KEY_EVENT, key );
 #else

@@ -677,6 +677,7 @@ typedef enum {
 } gameImport_t;
 #endif
 
+
 //
 // functions exported by the game subsystem
 //

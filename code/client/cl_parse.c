@@ -213,7 +213,7 @@ void CL_ParseSnapshot( msg_t *msg ) {
 	if(msg->compat)
 		clc.reliableAcknowledge = MSG_ReadLong( msg );
 	#endif
-	
+
 	// read in the new snapshot to a temporary buffer
 	// we will only copy to cl.snap if it is valid
 	Com_Memset (&newSnap, 0, sizeof(newSnap));
@@ -486,7 +486,7 @@ void CL_ParseGamestate( msg_t *msg ) {
 		cmd = MSG_ReadByte( msg );
 
 		#ifdef ELITEFORCE
-		if((msg->compat && cmd <= 0) || cmd == svc_EOF)
+		if ( ( msg->compat && cmd <= 0 ) || cmd == svc_EOF )
 		#else
 		if ( cmd == svc_EOF )
 		#endif
@@ -913,7 +913,7 @@ void CL_ParseServerMessage( msg_t *msg ) {
 		cmd = MSG_ReadByte( msg );
 
 		#ifdef ELITEFORCE
-		if(cmd == svc_EOF || (msg->compat && cmd == -1))
+		if ( cmd == svc_EOF || ( msg->compat && cmd == -1 ) )
 		#else
 		if ( cmd == svc_EOF)
 		#endif

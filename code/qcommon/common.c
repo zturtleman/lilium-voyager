@@ -2456,6 +2456,7 @@ void Com_ReadCDKey( const char *filename ) {
 	fileHandle_t	f;
 	char			buffer[33];
 	char			fbuffer[MAX_OSPATH];
+
 #ifdef ELITEFORCE
 	int index = 0;
 	char curchar;
@@ -2528,7 +2529,7 @@ void Com_ReadCDKey( const char *filename ) {
 #else
 	FS_Read( buffer, 16, f );
 	FS_FCloseFile( f );
-	
+
 	if (CL_CDKeyValidate(buffer, NULL)) {
 		Q_strncpyz( cl_cdkey, buffer, 17 );
 	} else {
@@ -2585,17 +2586,20 @@ static void Com_WriteCDKey( const char *filename, const char *ikey ) {
 	mode_t			savedumask;
 #endif
 
+
 #ifdef ELITEFORCE
 	sprintf(fbuffer, "%s/efq3.key", filename);
 #else
 	Com_sprintf(fbuffer, sizeof(fbuffer), "%s/q3key", filename);
 #endif
 
+
 #ifdef ELITEFORCE
 	Q_strncpyz( key, ikey, 23 );
 	key[22] = '\0';
 #else
 	Q_strncpyz( key, ikey, 17 );
+
 	if(!CL_CDKeyValidate(key, NULL) ) {
 		return;
 	}

@@ -452,8 +452,6 @@ typedef struct shader_s {
 	float		portalRange;			// distance to fog out at
 	qboolean	isPortal;
 
-	int			multitextureEnv;		// 0, GL_MODULATE, GL_ADD (FIXME: put in stage)
-
 	cullType_t	cullType;				// CT_FRONT_SIDED, CT_BACK_SIDED, or CT_TWO_SIDED
 	qboolean	polygonOffset;			// set for decals and other items that must be offset 
 	qboolean	noMipMaps;				// for console fonts, 2D elements, etc.
@@ -564,9 +562,8 @@ enum
 	GENERICDEF_USE_VERTEX_ANIMATION = 0x0004,
 	GENERICDEF_USE_FOG              = 0x0008,
 	GENERICDEF_USE_RGBAGEN          = 0x0010,
-	GENERICDEF_USE_LIGHTMAP         = 0x0020,
-	GENERICDEF_ALL                  = 0x003F,
-	GENERICDEF_COUNT                = 0x0040,
+	GENERICDEF_ALL                  = 0x001F,
+	GENERICDEF_COUNT                = 0x0020,
 };
 
 enum
@@ -638,7 +635,6 @@ typedef enum
 
 	UNIFORM_DIFFUSETEXMATRIX,
 	UNIFORM_DIFFUSETEXOFFTURB,
-	UNIFORM_TEXTURE1ENV,
 
 	UNIFORM_TCGEN0,
 	UNIFORM_TCGEN0VECTOR0,
@@ -853,7 +849,6 @@ typedef enum {
 	SF_IQM,
 	SF_FLARE,
 	SF_ENTITY,				// beams, rails, lightning, etc that can be determined by entity
-	SF_DISPLAY_LIST,
 	SF_VAO_MESH,
 	SF_VAO_MDVMESH,
 
@@ -881,11 +876,6 @@ typedef struct srfPoly_s {
 	int				numVerts;
 	polyVert_t		*verts;
 } srfPoly_t;
-
-typedef struct srfDisplayList_s {
-	surfaceType_t	surfaceType;
-	int				listNum;
-} srfDisplayList_t;
 
 
 typedef struct srfFlare_s {
@@ -1412,6 +1402,10 @@ typedef struct {
 	qboolean seamlessCubeMap;
 
 	GLenum packedNormalDataType;
+	GLenum packedTexcoordDataType;
+	GLenum packedColorDataType;
+	int packedTexcoordDataSize;
+	int packedColorDataSize;
 
 	qboolean floatLightmap;
 	qboolean vertexArrayObject;
@@ -1713,6 +1707,7 @@ extern  cvar_t  *r_ext_multi_draw_arrays;
 extern  cvar_t  *r_ext_framebuffer_object;
 extern  cvar_t  *r_ext_texture_float;
 extern  cvar_t  *r_arb_half_float_pixel;
+extern  cvar_t  *r_arb_half_float_vertex;
 extern  cvar_t  *r_ext_framebuffer_multisample;
 extern  cvar_t  *r_arb_seamless_cube_map;
 extern  cvar_t  *r_arb_vertex_type_2_10_10_10_rev;
@@ -2180,8 +2175,10 @@ VERTEX BUFFER OBJECTS
 ============================================================
 */
 
-uint32_t R_VaoPackTangent(vec4_t v);
-uint32_t R_VaoPackNormal(vec3_t v);
+int R_VaoPackTangent(byte *out, vec4_t v);
+int R_VaoPackNormal(byte *out, vec3_t v);
+int R_VaoPackTexCoord(byte *out, vec2_t st);
+int R_VaoPackColors(byte *out, vec4_t color);
 void R_VaoUnpackTangent(vec4_t v, uint32_t b);
 void R_VaoUnpackNormal(vec3_t v, uint32_t b);
 

@@ -88,7 +88,10 @@ RB_AddQuadStampExt
 */
 void RB_AddQuadStampExt( vec3_t origin, vec3_t left, vec3_t up, float color[4], float s1, float t1, float s2, float t2 ) {
 	vec3_t		normal;
+	uint32_t    pNormal;
 	int			ndx;
+
+	RB_CheckVao(tess.vao);
 
 	RB_CHECKOVERFLOW( 4, 6 );
 
@@ -123,10 +126,11 @@ void RB_AddQuadStampExt( vec3_t origin, vec3_t left, vec3_t up, float color[4], 
 	// constant normal all the way around
 	VectorSubtract( vec3_origin, backEnd.viewParms.or.axis[0], normal );
 
+	R_VaoPackNormal((byte *)&pNormal, normal);
 	tess.normal[ndx] =
 	tess.normal[ndx+1] =
 	tess.normal[ndx+2] =
-	tess.normal[ndx+3] = R_VaoPackNormal(normal);
+	tess.normal[ndx+3] = pNormal;
 
 	// standard square texture coordinates
 	VectorSet2(tess.texCoords[ndx  ][0], s1, t1);
@@ -289,6 +293,8 @@ static void RB_SurfacePolychain( srfPoly_t *p ) {
 	int		i;
 	int		numv;
 
+	RB_CheckVao(tess.vao);
+
 	RB_CHECKOVERFLOW( p->numVerts, 3*(p->numVerts - 2) );
 
 	// fan triangles into the tess array
@@ -354,7 +360,7 @@ static void RB_SurfaceVertsAndIndexes( int numVerts, srfVert_t *verts, int numIn
 		dv = verts;
 		normal = &tess.normal[ tess.numVertexes ];
 		for ( i = 0 ; i < numVerts ; i++, dv++, normal++ )
-			*normal = R_VaoPackNormal(dv->normal);
+			R_VaoPackNormal((byte *)normal, dv->normal);
 	}
 
 #ifdef USE_VERT_TANGENT_SPACE
@@ -363,7 +369,7 @@ static void RB_SurfaceVertsAndIndexes( int numVerts, srfVert_t *verts, int numIn
 		dv = verts;
 		tangent = &tess.tangent[ tess.numVertexes ];
 		for ( i = 0 ; i < numVerts ; i++, dv++, tangent++ )
-			*tangent = R_VaoPackTangent(dv->tangent);
+			R_VaoPackTangent((byte *)tangent, dv->tangent);
 	}
 #endif
 
@@ -396,7 +402,7 @@ static void RB_SurfaceVertsAndIndexes( int numVerts, srfVert_t *verts, int numIn
 		dv = verts;
 		lightdir = &tess.lightdir[ tess.numVertexes ];
 		for ( i = 0 ; i < numVerts ; i++, dv++, lightdir++ )
-			*lightdir = R_VaoPackNormal(dv->lightdir);
+			R_VaoPackNormal((byte *)lightdir, dv->lightdir);
 	}
 
 #if 0  // nothing even uses vertex dlightbits
@@ -1206,6 +1212,8 @@ static void DoRailCore( const vec3_t start, const vec3_t end, const vec3_t up, f
 	int			vbase;
 	float		t = len / 256.0f;
 
+	RB_CheckVao(tess.vao);
+
 	RB_CHECKOVERFLOW( 4, 6 );
 
 	vbase = tess.numVertexes;
@@ -1286,6 +1294,8 @@ static void DoRailDiscs( int numSegs, const vec3_t start, const vec3_t dir, cons
 			VectorAdd( pos[i], dir, pos[i] );
 		}
 	}
+
+	RB_CheckVao(tess.vao);
 
 	for ( i = 0; i < numSegs; i++ )
 	{
@@ -1729,7 +1739,7 @@ static void LerpMeshVertexes_scalar(mdvSurface_t *surf, float backlerp)
 			VectorCopy(newVerts->xyz,    outXyz);
 			VectorCopy(newVerts->normal, normal);
 
-			*outNormal = R_VaoPackNormal(normal);
+			R_VaoPackNormal((byte *)outNormal, normal);
 
 			newVerts++;
 			outXyz += 4;
@@ -1754,7 +1764,7 @@ static void LerpMeshVertexes_scalar(mdvSurface_t *surf, float backlerp)
 			VectorLerp(newVerts->normal, oldVerts->normal, backlerp, normal);
 			VectorNormalize(normal);
 
-			*outNormal = R_VaoPackNormal(normal);
+			R_VaoPackNormal((byte *)outNormal, normal);
 
 			newVerts++;
 			oldVerts++;
@@ -1797,6 +1807,8 @@ static void RB_SurfaceMesh(mdvSurface_t *surface) {
 	} else  {
 		backlerp = backEnd.currentEntity->e.backlerp;
 	}
+
+	RB_CheckVao(tess.vao);
 
 	RB_CHECKOVERFLOW( surface->numVerts, surface->numIndexes );
 
@@ -1905,6 +1917,8 @@ static void RB_SurfaceGrid( srfBspSurface_t *srf ) {
 		return;
 	}
 
+	RB_CheckVao(tess.vao);
+
 	dlightBits = srf->dlightBits;
 	tess.dlightBits |= dlightBits;
 
@@ -1992,13 +2006,13 @@ static void RB_SurfaceGrid( srfBspSurface_t *srf ) {
 
 				if ( tess.shader->vertexAttribs & ATTR_NORMAL )
 				{
-					*normal++ = R_VaoPackNormal(dv->normal);
+					R_VaoPackNormal((byte *)normal++, dv->normal);
 				}
 
 #ifdef USE_VERT_TANGENT_SPACE
 				if ( tess.shader->vertexAttribs & ATTR_TANGENT )
 				{
-					*tangent++ = R_VaoPackTangent(dv->tangent);
+					R_VaoPackTangent((byte *)tangent++, dv->tangent);
 				}
 #endif
 				if ( tess.shader->vertexAttribs & ATTR_TEXCOORD )
@@ -2021,7 +2035,7 @@ static void RB_SurfaceGrid( srfBspSurface_t *srf ) {
 
 				if ( tess.shader->vertexAttribs & ATTR_LIGHTDIRECTION )
 				{
-					*lightdir++ = R_VaoPackNormal(dv->lightdir);
+					R_VaoPackNormal((byte *)lightdir++, dv->lightdir);
 				}
 
 				//*vDlightBits++ = dlightBits;
@@ -2264,12 +2278,6 @@ void RB_SurfaceVaoMdvMesh(srfVaoMdvMesh_t * surface)
 	glState.vertexAnimation = qfalse;
 }
 
-static void RB_SurfaceDisplayList( srfDisplayList_t *surf ) {
-	// all apropriate state must be set in RB_BeginSurface
-	// this isn't implemented yet...
-	qglCallList( surf->listNum );
-}
-
 static void RB_SurfaceSkip( void *surf ) {
 }
 
@@ -2286,7 +2294,6 @@ void (*rb_surfaceTable[SF_NUM_SURFACE_TYPES])( void *) = {
 	(void(*)(void*))RB_IQMSurfaceAnim,		// SF_IQM,
 	(void(*)(void*))RB_SurfaceFlare,		// SF_FLARE,
 	(void(*)(void*))RB_SurfaceEntity,		// SF_ENTITY
-	(void(*)(void*))RB_SurfaceDisplayList,		// SF_DISPLAY_LIST
 	(void(*)(void*))RB_SurfaceVaoMesh,	    // SF_VAO_MESH,
 	(void(*)(void*))RB_SurfaceVaoMdvMesh,   // SF_VAO_MDVMESH
 };

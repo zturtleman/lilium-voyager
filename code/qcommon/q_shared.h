@@ -38,10 +38,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 //  #define LEGACY_PROTOCOL	// You probably don't need this for your standalone game
 #else
   #ifdef ELITEFORCE
-    #define PRODUCT_NAME		"ioST:V HM"
+    #define PRODUCT_NAME		"Lilium Voyager HM"
     #define BASEGAME			"baseEF"
-    #define CLIENT_WINDOW_TITLE     	"iostvoyHM"
-    #define CLIENT_WINDOW_MIN_TITLE 	"iostvoyHM"
+    #define CLIENT_WINDOW_TITLE     	"Lilium Voyager Holomatch"
+    #define CLIENT_WINDOW_MIN_TITLE 	"liliumvoy"
     #define HOMEPATH_NAME_UNIX		".stvef"
     #define HOMEPATH_NAME_WIN		"STVEF"
     #define HOMEPATH_NAME_MACOSX	HOMEPATH_NAME_WIN

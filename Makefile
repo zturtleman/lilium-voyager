@@ -127,7 +127,7 @@ endif
 
 ifndef CLIENTBIN
   ifeq ($(BUILD_ELITEFORCE),1)
-    CLIENTBIN=iostvoyHM
+    CLIENTBIN=liliumvoyhm
   else
     CLIENTBIN=ioquake3
   endif
@@ -135,7 +135,7 @@ endif
 
 ifndef SERVERBIN
   ifeq ($(BUILD_ELITEFORCE),1)
-    SERVERBIN=iostvefded
+    SERVERBIN=liliumvoyded
   else
     SERVERBIN=ioq3ded
   endif

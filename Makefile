@@ -72,6 +72,13 @@ PLATFORM=$(COMPILE_PLATFORM)
 endif
 export PLATFORM
 
+ifeq ($(PLATFORM),mingw32)
+  MINGW=1
+endif
+ifeq ($(PLATFORM),mingw64)
+  MINGW=1
+endif
+
 ifeq ($(COMPILE_ARCH),i86pc)
   COMPILE_ARCH=x86
 endif
@@ -187,7 +194,7 @@ USE_CURL=1
 endif
 
 ifndef USE_CURL_DLOPEN
-  ifeq ($(PLATFORM),mingw32)
+  ifdef MINGW
     USE_CURL_DLOPEN=0
   else
     USE_CURL_DLOPEN=1
@@ -367,18 +374,16 @@ ifneq (,$(findstring "$(PLATFORM)", "linux" "gnu_kfreebsd" "kfreebsd-gnu"))
     -pipe -DUSE_ICON
   CLIENT_CFLAGS += $(SDL_CFLAGS)
 
-  OPTIMIZEVM = -O3 -funroll-loops -fomit-frame-pointer
+  OPTIMIZEVM = -O3
   OPTIMIZE = $(OPTIMIZEVM) -ffast-math
 
   ifeq ($(ARCH),x86_64)
-    OPTIMIZEVM = -O3 -fomit-frame-pointer -funroll-loops \
-      -falign-functions=2 -fstrength-reduce
+    OPTIMIZEVM = -O3
     OPTIMIZE = $(OPTIMIZEVM) -ffast-math
     HAVE_VM_COMPILED = true
   else
   ifeq ($(ARCH),x86)
-    OPTIMIZEVM = -O3 -march=i586 -fomit-frame-pointer \
-      -funroll-loops -falign-functions=2 -fstrength-reduce
+    OPTIMIZEVM = -O3 -march=i586
     OPTIMIZE = $(OPTIMIZEVM) -ffast-math
     HAVE_VM_COMPILED=true
   else
@@ -479,13 +484,13 @@ ifeq ($(PLATFORM),darwin)
   endif
 
   ifeq ($(CROSS_COMPILING),1)
-    ifeq ($(ARCH),ppc)
-      CC=powerpc-apple-darwin10-gcc
-      RANLIB=powerpc-apple-darwin10-ranlib
+    ifeq ($(ARCH),x86_64)
+      CC=x86_64-apple-darwin13-cc
+      RANLIB=x86_64-apple-darwin13-ranlib
     else
       ifeq ($(ARCH),x86)
-        CC=i686-apple-darwin10-gcc
-        RANLIB=i686-apple-darwin10-ranlib
+        CC=i386-apple-darwin13-cc
+        RANLIB=i386-apple-darwin13-ranlib
       else
         $(error Architecture $(ARCH) is not supported when cross compiling)
       endif
@@ -539,7 +544,7 @@ else # ifeq darwin
 # SETUP AND BUILD -- MINGW32
 #############################################################################
 
-ifeq ($(PLATFORM),mingw32)
+ifdef MINGW
 
   ifeq ($(CROSS_COMPILING),1)
     # If CC is already set to something generic, we probably want to use
@@ -553,7 +558,7 @@ ifeq ($(PLATFORM),mingw32)
       MINGW_PREFIXES=amd64-mingw32msvc x86_64-w64-mingw32
     endif
     ifeq ($(ARCH),x86)
-      MINGW_PREFIXES=i586-mingw32msvc i686-w64-mingw32
+      MINGW_PREFIXES=i586-mingw32msvc i686-w64-mingw32 i686-pc-mingw32
     endif
 
     ifndef CC
@@ -597,14 +602,12 @@ ifeq ($(PLATFORM),mingw32)
   endif
 
   ifeq ($(ARCH),x86_64)
-    OPTIMIZEVM = -O3 -fno-omit-frame-pointer \
-      -funroll-loops -falign-functions=2 -fstrength-reduce
+    OPTIMIZEVM = -O3
     OPTIMIZE = $(OPTIMIZEVM) -ffast-math
     HAVE_VM_COMPILED = true
   endif
   ifeq ($(ARCH),x86)
-    OPTIMIZEVM = -O3 -march=i586 -fno-omit-frame-pointer \
-      -funroll-loops -falign-functions=2 -fstrength-reduce
+    OPTIMIZEVM = -O3 -march=i586
     OPTIMIZE = $(OPTIMIZEVM) -ffast-math
     HAVE_VM_COMPILED = true
   endif
@@ -687,7 +690,7 @@ ifeq ($(PLATFORM),mingw32)
     SDLDLL=SDL2.dll
   endif
 
-else # ifeq mingw32
+else # ifdef MINGW
 
 #############################################################################
 # SETUP AND BUILD -- FREEBSD
@@ -702,7 +705,7 @@ ifeq ($(PLATFORM),freebsd)
   CLIENT_CFLAGS += $(SDL_CFLAGS)
   HAVE_VM_COMPILED = true
 
-  OPTIMIZEVM = -O3 -funroll-loops -fomit-frame-pointer
+  OPTIMIZEVM = -O3
   OPTIMIZE = $(OPTIMIZEVM) -ffast-math
 
   SHLIBEXT=so
@@ -755,18 +758,16 @@ ifeq ($(PLATFORM),openbsd)
     -pipe -DUSE_ICON -DMAP_ANONYMOUS=MAP_ANON
   CLIENT_CFLAGS += $(SDL_CFLAGS)
 
-  OPTIMIZEVM = -O3 -funroll-loops -fomit-frame-pointer
+  OPTIMIZEVM = -O3
   OPTIMIZE = $(OPTIMIZEVM) -ffast-math
 
   ifeq ($(ARCH),x86_64)
-    OPTIMIZEVM = -O3 -fomit-frame-pointer -funroll-loops \
-      -falign-functions=2 -fstrength-reduce
+    OPTIMIZEVM = -O3
     OPTIMIZE = $(OPTIMIZEVM) -ffast-math
     HAVE_VM_COMPILED = true
   else
   ifeq ($(ARCH),x86)
-    OPTIMIZEVM = -O3 -march=i586 -fomit-frame-pointer \
-      -funroll-loops -falign-functions=2 -fstrength-reduce
+    OPTIMIZEVM = -O3 -march=i586
     OPTIMIZE = $(OPTIMIZEVM) -ffast-math
     HAVE_VM_COMPILED=true
   else
@@ -940,7 +941,7 @@ else # ifeq sunos
 
 endif #Linux
 endif #darwin
-endif #mingw32
+endif #MINGW
 endif #FreeBSD
 endif #OpenBSD
 endif #NetBSD
@@ -1690,7 +1691,7 @@ Q3OBJ = \
   $(B)/client/con_log.o \
   $(B)/client/sys_main.o
 
-ifeq ($(PLATFORM),mingw32)
+ifdef MINGW
   Q3OBJ += \
     $(B)/client/con_passive.o
 else
@@ -1711,11 +1712,11 @@ Q3R2OBJ = \
   $(B)/renderergl2/tr_font.o \
   $(B)/renderergl2/tr_glsl.o \
   $(B)/renderergl2/tr_image.o \
-  $(B)/renderergl2/tr_image_png.o \
-  $(B)/renderergl2/tr_image_jpg.o \
   $(B)/renderergl2/tr_image_bmp.o \
-  $(B)/renderergl2/tr_image_tga.o \
+  $(B)/renderergl2/tr_image_jpg.o \
   $(B)/renderergl2/tr_image_pcx.o \
+  $(B)/renderergl2/tr_image_png.o \
+  $(B)/renderergl2/tr_image_tga.o \
   $(B)/renderergl2/tr_init.o \
   $(B)/renderergl2/tr_light.o \
   $(B)/renderergl2/tr_main.o \
@@ -1777,11 +1778,11 @@ Q3ROBJ = \
   $(B)/renderergl1/tr_flares.o \
   $(B)/renderergl1/tr_font.o \
   $(B)/renderergl1/tr_image.o \
-  $(B)/renderergl1/tr_image_png.o \
-  $(B)/renderergl1/tr_image_jpg.o \
   $(B)/renderergl1/tr_image_bmp.o \
-  $(B)/renderergl1/tr_image_tga.o \
+  $(B)/renderergl1/tr_image_jpg.o \
   $(B)/renderergl1/tr_image_pcx.o \
+  $(B)/renderergl1/tr_image_png.o \
+  $(B)/renderergl1/tr_image_tga.o \
   $(B)/renderergl1/tr_init.o \
   $(B)/renderergl1/tr_light.o \
   $(B)/renderergl1/tr_main.o \
@@ -2134,7 +2135,7 @@ ifeq ($(HAVE_VM_COMPILED),true)
   endif
 endif
 
-ifeq ($(PLATFORM),mingw32)
+ifdef MINGW
   Q3OBJ += \
     $(B)/client/win_resource.o \
     $(B)/client/sys_win32.o
@@ -2302,7 +2303,7 @@ ifeq ($(HAVE_VM_COMPILED),true)
   endif
 endif
 
-ifeq ($(PLATFORM),mingw32)
+ifdef MINGW
   Q3DOBJ += \
     $(B)/ded/win_resource.o \
     $(B)/ded/sys_win32.o \
@@ -2918,7 +2919,7 @@ distclean: clean toolsclean
 	@rm -rf $(BUILD_DIR)
 
 installer: release
-ifeq ($(PLATFORM),mingw32)
+ifdef MINGW
 	@$(MAKE) VERSION=$(VERSION) -C $(NSISDIR) V=$(V) \
 		SDLDLL=$(SDLDLL) \
 		USE_RENDERER_DLOPEN=$(USE_RENDERER_DLOPEN) \

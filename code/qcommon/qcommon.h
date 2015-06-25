@@ -637,7 +637,11 @@ issues.
 #define	MAX_FILE_HANDLES	64
 
 #ifdef ELITEFORCE
-  #define Q3CONFIG_CFG "hmconfig.cfg"
+  #ifdef DEDICATED
+  #	define Q3CONFIG_CFG "hmconfig_server.cfg"
+  #else
+  #	define Q3CONFIG_CFG "hmconfig.cfg"
+  #endif
 #else
   #ifdef DEDICATED
   #	define Q3CONFIG_CFG "q3config_server.cfg"

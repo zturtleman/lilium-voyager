@@ -21,6 +21,8 @@
 ; MASM ftol conversion functions using SSE or FPU
 ; assume __cdecl calling convention is being used for x86, __fastcall for x64
 
+; Make Elite Force use round to nearest instead of round toward zero
+
 IFNDEF idx64
 .686p
 .xmm
@@ -30,7 +32,11 @@ ENDIF
 .data
 
 ifndef idx64
+IFDEF ELITEFORCE
+  fpucw WORD 007Fh
+ELSE
   fpucw WORD 0F7Fh
+ENDIF
 endif
 
 .code
@@ -39,13 +45,21 @@ IFDEF idx64
 ; qftol using SSE
 
   qftolsse PROC
+IFDEF ELITEFORCE
+    cvtss2si eax, xmm0
+ELSE
     cvttss2si eax, xmm0
+ENDIF
 	ret
   qftolsse ENDP
 
   qvmftolsse PROC
     movss xmm0, dword ptr [rdi + rbx * 4]
+IFDEF ELITEFORCE
+	cvtss2si eax, xmm0
+ELSE
 	cvttss2si eax, xmm0
+ENDIF
 	ret
   qvmftolsse ENDP
 
@@ -75,13 +89,21 @@ ELSE
 ; qftol using SSE
   qftolsse PROC
     movss xmm0, dword ptr [esp + 4]
+IFDEF ELITEFORCE
+    cvtss2si eax, xmm0
+ELSE
     cvttss2si eax, xmm0
+ENDIF
 	ret
   qftolsse ENDP
 
   qvmftolsse PROC
     movss xmm0, dword ptr [edi + ebx * 4]
+IFDEF ELITEFORCE
+	cvtss2si eax, xmm0
+ELSE
 	cvttss2si eax, xmm0
+ENDIF
 	ret
   qvmftolsse ENDP
 ENDIF

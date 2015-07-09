@@ -1680,6 +1680,10 @@ int R_SpriteFogNum( trRefEntity_t *ent ) {
 		return 0;
 	}
 
+	if ( ent->e.renderfx & RF_CROSSHAIR ) {
+		return 0;
+	}
+
 	#ifdef ELITEFORCE
 	radius = ent->e.data.sprite.radius;
 	#else

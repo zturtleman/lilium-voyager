@@ -369,6 +369,17 @@ void SV_DirectConnect( netadr_t from ) {
 	{
 		if(version != com_protocol->integer)
 		{
+#ifdef ELITEFORCE
+#ifdef LEGACY_PROTOCOL
+			// if it's a iostvoyHM 1.37 client or 1.38 before quake3-ef_1.38-iorev2110.diff
+			// use a specific message so the client falls back to using the legacy protocol
+			// iostvoyHM 1.37: cl_main.c: if(!Q_strncmp(s, "Server uses protocol version 24.\n", 33))
+			if(version == 25)
+				NET_OutOfBandPrint(NS_SERVER, from, "print\nServer uses protocol version %i.\n"
+					   "and protocol version %i (yours is %i).\n", PROTOCOL_LEGACY_VERSION, com_protocol->integer, version);
+			else
+#endif
+#endif
 			NET_OutOfBandPrint(NS_SERVER, from, "print\nServer uses protocol version %i "
 					   "(yours is %i).\n", com_protocol->integer, version);
 			Com_DPrintf("    rejected connect from version %i\n", version);

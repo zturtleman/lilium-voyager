@@ -597,6 +597,11 @@ void CL_ParseDownload ( msg_t *msg ) {
 
 		if (clc.downloadSize < 0)
 		{
+#ifdef ELITEFORCE
+			if (clc.compat)
+				Com_Error( ERR_DROP, "File not found." );
+			else
+#endif
 			Com_Error( ERR_DROP, "%s", MSG_ReadString( msg ) );
 			return;
 		}

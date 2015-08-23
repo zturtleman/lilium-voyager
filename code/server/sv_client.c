@@ -1241,13 +1241,26 @@ int SV_SendDownloadMessages(void)
 		
 		if(cl->state && *cl->downloadName)
 		{
-			MSG_Init(&msg, msgBuffer, sizeof(msgBuffer));
-			MSG_WriteLong(&msg, cl->lastClientCommand);
+#ifdef ELITEFORCE
+			if(cl->compat)
+			{
+				MSG_InitOOB(&msg, msgBuffer, sizeof(msgBuffer));
+				msg.compat = qtrue;
+			}
+			else
+#endif
+			{
+				MSG_Init(&msg, msgBuffer, sizeof(msgBuffer));
+				MSG_WriteLong(&msg, cl->lastClientCommand);
+			}
 			
 			retval = SV_WriteDownloadToClient(cl, &msg);
 				
 			if(retval)
 			{
+#ifdef ELITEFORCE
+				if(!msg.compat)
+#endif
 				MSG_WriteByte(&msg, svc_EOF);
 				SV_Netchan_Transmit(cl, &msg);
 				numDLs += retval;

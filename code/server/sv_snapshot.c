@@ -671,7 +671,12 @@ void SV_SendClientMessages(void)
 		if(!c->state)
 			continue;		// not connected
 
+#ifdef ELITEFORCE
+		// compat clients need svc_snapshot to update reliableAcknowledge
+		if(*c->downloadName && !c->compat)
+#else
 		if(*c->downloadName)
+#endif
 			continue;		// Client is downloading, don't send snapshots
 
 		if(c->netchan.unsentFragments || c->netchan_start_queue)

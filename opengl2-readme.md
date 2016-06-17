@@ -18,7 +18,7 @@ compatibility with existing Quake 3 mods.
   - Texture upsampling.
   - Advanced materials support.
   - Advanced shading and specular methods.
-  - LATC and BPTC texture compression support.
+  - RGTC and BPTC texture compression support.
   - Screen-space ambient occlusion.
 
 
@@ -67,7 +67,7 @@ Cvars for simple rendering features:
 
 * `r_ext_compressed_textures`       - Automatically compress textures.
                                      0 - No texture compression. (default)
-                                     1 - DXT/LATC texture compression if
+                                     1 - DXT/RGTC texture compression if
                                          supported.
                                      2 - BPTC texture compression if supported.
 
@@ -160,24 +160,15 @@ Cvars for HDR and tonemapping:
 
 Cvars for advanced material usage:
 
-*  `r_normalMapping`                - Enable normal mapping for materials that
-                                   support it, and also specify advanced 
-                                   shading techniques.
+*  `r_normalMapping`                - Enable normal maps for materials that
+                                   support it.
                                      0 - No.
                                      1 - Yes. (default)
-                                     2 - Yes, and use Oren-Nayar reflectance
-                                         model.
-                                     3 - Yes, and use tri-Ace's Oren-Nayar
-                                         reflectance model.
 
-*  `r_specularMapping`              - Enable specular mapping for materials that
-                                   support it, and also specify advanced
-                                   specular techniques.
+*  `r_specularMapping`              - Enable specular maps for materials that
+                                   support it.
                                      0 - No.
-                                     1 - Yes, and use tri-Ace. (default)
-                                     2 - Yes, and use Blinn-Phong.
-                                     3 - Yes, and use Cook-Torrance.
-                                     4 - Yes, and use Torrance-Sparrow.
+                                     1 - Yes. (default)
 
 *  `r_deluxeMapping`                - Enable deluxe mapping.  (Map is compiled
                                    with light directions.)  Even if the map 
@@ -230,6 +221,12 @@ Cvars for advanced material usage:
                                      0.01 - Pretty smooth.
                                      0.05 - Standard depth. (default)
                                      0.1  - Looks broken.
+
+*  `r_pbr`                          - Enable physically based rendering.
+                                   Experimental, will not look correct without
+                                   assets meant for it.
+                                     0 - No. (default)
+                                     1 - Yes.
 
 Cvars for image interpolation and generation:
 
@@ -333,13 +330,6 @@ Cvars that you probably don't care about or shouldn't mess with:
                                      0 - No.
                                      1 - Yes. (default)
 
-*  `r_normalAmbient`                - Split map light into ambient and directed
-                                   portions when doing deluxe mapping.  Not
-                                   very useful.
-                                     0   - Don't. (default).
-                                     0.3 - 30% ambient, 70% directed.
-                                     1.0 - 100% ambient.
-
 *  `r_mergeLightmaps`               - Merge the small (128x128) lightmaps into 
                                    2 or fewer giant (4096x4096) lightmaps.
                                    Easy speedup.
@@ -354,20 +344,6 @@ Cvars that you probably don't care about or shouldn't mess with:
 
 *  `r_shadowCascadeZBias`           - Z-bias for shadow cascade frustums.
                                      -256 - Default.
-
-*  `r_materialGamma`                - Gamma level for material textures.
-                                   (diffuse, specular)
-                                     1.0 - Quake 3, fastest. (default)
-
-*  `r_lightGamma`                   - Gamma level for light.
-                                   (lightmap, lightgrid, vertex lights)
-                                     1.0 - Quake 3, fastest. (default)
-
-*  `r_framebufferGamma`             - Gamma level for framebuffers.
-                                     1.0 - Quake 3, fastest. (default)
-
-*  `r_tonemapGamma`                 - Gamma applied after tonemapping.
-                                     1.0 - Quake 3, fastest. (default)
 
 Cvars that have broken bits:
 

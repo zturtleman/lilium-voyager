@@ -3938,7 +3938,10 @@ CL_ServerInfoPacket
 ===================
 */
 void CL_ServerInfoPacket( netadr_t from, msg_t *msg ) {
-	int		i, type;
+	int		i;
+#ifndef ELITEFORCE
+	int		type;
+#endif
 	char	info[MAX_INFO_STRING];
 	char	*infoString;
 	int		prot;
@@ -3996,7 +3999,7 @@ void CL_ServerInfoPacket( netadr_t from, msg_t *msg ) {
 		if ( cl_pinglist[i].adr.port && !cl_pinglist[i].time && NET_CompareAdr( from, cl_pinglist[i].adr ) )
 		{
 #ifdef ELITEFORCE
-			char *str = "";
+			char *str;
 #endif
 			
 			// calc ping time
@@ -4012,19 +4015,25 @@ void CL_ServerInfoPacket( netadr_t from, msg_t *msg ) {
 			{
 				case NA_BROADCAST:
 				case NA_IP:
-					type = 1;
 #ifdef ELITEFORCE
 					str = "udp";
+#else
+					type = 1;
 #endif					
 					break;
 				case NA_IP6:
-					type = 2;
 #ifdef ELITEFORCE
 					str = "udp6";
+#else
+					type = 2;
 #endif					
 					break;
 				default:
+#ifdef ELITEFORCE
+					str = "";
+#else
 					type = 0;
+#endif
 					break;
 			}
 #ifdef ELITEFORCE

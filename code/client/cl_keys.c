@@ -289,6 +289,33 @@ keyname_t keynames[] =
 	{"EURO", K_EURO},
 	{"UNDO", K_UNDO},
 
+	{"PAD0_A", K_PAD0_A },
+	{"PAD0_B", K_PAD0_B },
+	{"PAD0_X", K_PAD0_X },
+	{"PAD0_Y", K_PAD0_Y },
+	{"PAD0_BACK", K_PAD0_BACK },
+	{"PAD0_GUIDE", K_PAD0_GUIDE },
+	{"PAD0_START", K_PAD0_START },
+	{"PAD0_LEFTSTICK_CLICK", K_PAD0_LEFTSTICK_CLICK },
+	{"PAD0_RIGHTSTICK_CLICK", K_PAD0_RIGHTSTICK_CLICK },
+	{"PAD0_LEFTSHOULDER", K_PAD0_LEFTSHOULDER },
+	{"PAD0_RIGHTSHOULDER", K_PAD0_RIGHTSHOULDER },
+	{"PAD0_DPAD_UP", K_PAD0_DPAD_UP },
+	{"PAD0_DPAD_DOWN", K_PAD0_DPAD_DOWN },
+	{"PAD0_DPAD_LEFT", K_PAD0_DPAD_LEFT },
+	{"PAD0_DPAD_RIGHT", K_PAD0_DPAD_RIGHT },
+
+	{"PAD0_LEFTSTICK_LEFT", K_PAD0_LEFTSTICK_LEFT },
+	{"PAD0_LEFTSTICK_RIGHT", K_PAD0_LEFTSTICK_RIGHT },
+	{"PAD0_LEFTSTICK_UP", K_PAD0_LEFTSTICK_UP },
+	{"PAD0_LEFTSTICK_DOWN", K_PAD0_LEFTSTICK_DOWN },
+	{"PAD0_RIGHTSTICK_LEFT", K_PAD0_RIGHTSTICK_LEFT },
+	{"PAD0_RIGHTSTICK_RIGHT", K_PAD0_RIGHTSTICK_RIGHT },
+	{"PAD0_RIGHTSTICK_UP", K_PAD0_RIGHTSTICK_UP },
+	{"PAD0_RIGHTSTICK_DOWN", K_PAD0_RIGHTSTICK_DOWN },
+	{"PAD0_LEFTTRIGGER", K_PAD0_LEFTTRIGGER },
+	{"PAD0_RIGHTTRIGGER", K_PAD0_RIGHTTRIGGER },
+
 	{NULL,0}
 };
 
@@ -586,7 +613,7 @@ void Console_Key (int key) {
 	// enter finishes the line
 	if ( key == K_ENTER || key == K_KP_ENTER ) {
 		// if not in the game explicitly prepend a slash if needed
-		if ( clc.state != CA_ACTIVE &&
+		if ( clc.state != CA_ACTIVE && con_autochat->integer &&
 				g_consoleField.buffer[0] &&
 				g_consoleField.buffer[0] != '\\' &&
 				g_consoleField.buffer[0] != '/' ) {
@@ -608,7 +635,10 @@ void Console_Key (int key) {
 			if ( !g_consoleField.buffer[0] ) {
 				return;	// empty lines just scroll the console without adding to history
 			} else {
-				Cbuf_AddText ("cmd say ");
+				if ( con_autochat->integer ) {
+					Cbuf_AddText ("cmd say ");
+				}
+
 				Cbuf_AddText( g_consoleField.buffer );
 				Cbuf_AddText ("\n");
 			}
@@ -1212,6 +1242,11 @@ void CL_KeyDownEvent( int key, unsigned time )
 
 	if( keys[K_ALT].down && key == K_ENTER )
 	{
+		// don't repeat fullscreen toggle when keys are held down
+		if ( keys[K_ENTER].repeats > 1 ) {
+			return;
+		}
+
 		Cvar_SetValue( "r_fullscreen",
 			!Cvar_VariableIntegerValue( "r_fullscreen" ) );
 		return;

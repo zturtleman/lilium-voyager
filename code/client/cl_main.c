@@ -1114,7 +1114,8 @@ demo <demoname>
 */
 void CL_PlayDemo_f( void ) {
 	char		name[MAX_OSPATH];
-	char		*arg, *ext_test;
+	char		arg[MAX_OSPATH];
+	char		*ext_test;
 	int			protocol, i;
 	char		retry[MAX_OSPATH];
 
@@ -1128,10 +1129,10 @@ void CL_PlayDemo_f( void ) {
 	Cvar_Set( "sv_killserver", "2" );
 
 	// open the demo file
-	arg = Cmd_Argv(1);
-
-	CL_Disconnect( qtrue );
+	Q_strncpyz( arg, Cmd_Argv(1), sizeof( arg ) );
 	
+	CL_Disconnect( qtrue );
+
 #ifdef ELITEFORCE
 	ext_test = arg + strlen(arg) - 7;
 	if(!strcmp(ext_test, ".efdemo"))
@@ -1474,6 +1475,7 @@ void CL_Disconnect( qboolean showMainMenu ) {
 		for (i = 0; i < MAX_CLIENTS; i++) {
 			opus_decoder_destroy(clc.opusDecoder[i]);
 		}
+		clc.voipCodecInitialized = qfalse;
 	}
 	Cmd_RemoveCommand ("voip");
 #endif
@@ -1746,7 +1748,7 @@ CL_Connect_f
 ================
 */
 void CL_Connect_f( void ) {
-	char	*server;
+	char	server[MAX_OSPATH];
 	const char	*serverString;
 	int argc = Cmd_Argc();
 	netadrtype_t family = NA_UNSPEC;
@@ -1757,7 +1759,7 @@ void CL_Connect_f( void ) {
 	}
 	
 	if(argc == 2)
-		server = Cmd_Argv(1);
+		Q_strncpyz( server, Cmd_Argv(1), sizeof( server ) );
 	else
 	{
 		if(!strcmp(Cmd_Argv(1), "-4"))
@@ -1767,7 +1769,7 @@ void CL_Connect_f( void ) {
 		else
 			Com_Printf( "warning: only -4 or -6 as address type understood.\n");
 		
-		server = Cmd_Argv(2);
+		Q_strncpyz( server, Cmd_Argv(2), sizeof( server ) );
 	}
 
 	// save arguments for reconnect
@@ -1946,6 +1948,7 @@ void CL_Rcon_f( void ) {
 	}
 	
 	NET_SendPacket (NS_CLIENT, strlen(message)+1, message, to);
+	cls.rconAddress = to;
 }
 
 /*
@@ -2537,7 +2540,7 @@ void CL_ServersResponsePacket( const netadr_t* from, msg_t *msg, qboolean extend
 	char strbyte[3] = "FF";
 	#endif
 	
-	Com_Printf("CL_ServersResponsePacket\n");
+	Com_Printf("CL_ServersResponsePacket from %s\n", NET_AdrToStringwPort(*from));
 
 	if (cls.numglobalservers == -1) {
 		// state to detect lack of servers or lack of response
@@ -2845,7 +2848,10 @@ void CL_ConnectionlessPacket( netadr_t from, msg_t *msg ) {
 
 	// echo request from server
 	if ( !Q_stricmp(c, "echo") ) {
-		NET_OutOfBandPrint( NS_CLIENT, from, "%s", Cmd_Argv(1) );
+		// NOTE: we may have to add exceptions for auth and update servers
+		if ( NET_CompareAdr( from, clc.serverAddress ) || NET_CompareAdr( from, cls.rconAddress ) ) {
+			NET_OutOfBandPrint( NS_CLIENT, from, "%s", Cmd_Argv(1) );
+		}
 		return;
 	}
 
@@ -2862,12 +2868,14 @@ void CL_ConnectionlessPacket( netadr_t from, msg_t *msg ) {
 	}
 
 	// echo request from server
-	if(!Q_stricmp(c, "print")){
-		s = MSG_ReadString( msg );
-		
-		Q_strncpyz( clc.serverMessage, s, sizeof( clc.serverMessage ) );
-		Com_Printf( "%s", s );
+	if ( !Q_stricmp(c, "print") ) {
+		// NOTE: we may have to add exceptions for auth and update servers
+		if ( NET_CompareAdr( from, clc.serverAddress ) || NET_CompareAdr( from, cls.rconAddress ) ) {
+			s = MSG_ReadString( msg );
 
+			Q_strncpyz( clc.serverMessage, s, sizeof( clc.serverMessage ) );
+			Com_Printf( "%s", s );
+		}
 		return;
 	}
 
@@ -3304,7 +3312,7 @@ void CL_InitRef( void ) {
 	Com_Printf( "----- Initializing Renderer ----\n" );
 
 #ifdef USE_RENDERER_DLOPEN
-	cl_renderer = Cvar_Get("cl_renderer", "opengl1", CVAR_ARCHIVE | CVAR_LATCH);
+	cl_renderer = Cvar_Get("cl_renderer", "opengl2", CVAR_ARCHIVE | CVAR_LATCH);
 
 	Com_sprintf(dllName, sizeof(dllName), "renderer_%s_" ARCH_STRING DLL_EXT, cl_renderer->string);
 
@@ -3313,7 +3321,7 @@ void CL_InitRef( void ) {
 		Com_Printf("failed:\n\"%s\"\n", Sys_LibraryError());
 		Cvar_ForceReset("cl_renderer");
 
-		Com_sprintf(dllName, sizeof(dllName), "renderer_opengl1_" ARCH_STRING DLL_EXT);
+		Com_sprintf(dllName, sizeof(dllName), "renderer_opengl2_" ARCH_STRING DLL_EXT);
 		rendererLib = Sys_LoadDll(dllName, qfalse);
 	}
 
@@ -3661,7 +3669,7 @@ void CL_Init( void ) {
 
 	cl_allowDownload = Cvar_Get ("cl_allowDownload", "0", CVAR_ARCHIVE);
 #ifdef USE_CURL_DLOPEN
-	cl_cURLLib = Cvar_Get("cl_cURLLib", DEFAULT_CURL_LIB, CVAR_ARCHIVE);
+	cl_cURLLib = Cvar_Get("cl_cURLLib", DEFAULT_CURL_LIB, CVAR_ARCHIVE | CVAR_PROTECTED);
 #endif
 
 	cl_conXOffset = Cvar_Get ("cl_conXOffset", "0", 0);
@@ -3693,13 +3701,13 @@ void CL_Init( void ) {
 	j_yaw =          Cvar_Get ("j_yaw",          "-0.022", CVAR_ARCHIVE);
 	j_forward =      Cvar_Get ("j_forward",      "-0.25", CVAR_ARCHIVE);
 	j_side =         Cvar_Get ("j_side",         "0.25", CVAR_ARCHIVE);
-	j_up =           Cvar_Get ("j_up",           "1", CVAR_ARCHIVE);
+	j_up =           Cvar_Get ("j_up",           "0", CVAR_ARCHIVE);
 
 	j_pitch_axis =   Cvar_Get ("j_pitch_axis",   "3", CVAR_ARCHIVE);
-	j_yaw_axis =     Cvar_Get ("j_yaw_axis",     "4", CVAR_ARCHIVE);
+	j_yaw_axis =     Cvar_Get ("j_yaw_axis",     "2", CVAR_ARCHIVE);
 	j_forward_axis = Cvar_Get ("j_forward_axis", "1", CVAR_ARCHIVE);
 	j_side_axis =    Cvar_Get ("j_side_axis",    "0", CVAR_ARCHIVE);
-	j_up_axis =      Cvar_Get ("j_up_axis",      "2", CVAR_ARCHIVE);
+	j_up_axis =      Cvar_Get ("j_up_axis",      "4", CVAR_ARCHIVE);
 
 	Cvar_CheckRange(j_pitch_axis, 0, MAX_JOYSTICK_AXIS-1, qtrue);
 	Cvar_CheckRange(j_yaw_axis, 0, MAX_JOYSTICK_AXIS-1, qtrue);
@@ -4297,6 +4305,10 @@ void CL_LocalServers_f( void ) {
 /*
 ==================
 CL_GlobalServers_f
+
+Originally master 0 was Internet and master 1 was MPlayer.
+ioquake3 2008; added support for requesting five separate master servers using 0-4.
+ioquake3 2017; made master 0 fetch all master servers and 1-5 request a single master server.
 ==================
 */
 void CL_GlobalServers_f( void ) {
@@ -4304,13 +4316,36 @@ void CL_GlobalServers_f( void ) {
 	int			count, i, masterNum;
 	char		command[1024], *masteraddress;
 	
-	if ((count = Cmd_Argc()) < 3 || (masterNum = atoi(Cmd_Argv(1))) < 0 || masterNum > MAX_MASTER_SERVERS - 1)
+	if ((count = Cmd_Argc()) < 3 || (masterNum = atoi(Cmd_Argv(1))) < 0 || masterNum > MAX_MASTER_SERVERS)
 	{
-		Com_Printf("usage: globalservers <master# 0-%d> <protocol> [keywords]\n", MAX_MASTER_SERVERS - 1);
+		Com_Printf("usage: globalservers <master# 0-%d> <protocol> [keywords]\n", MAX_MASTER_SERVERS);
 		return;	
 	}
 
-	sprintf(command, "sv_master%d", masterNum + 1);
+	// request from all master servers
+	if ( masterNum == 0 ) {
+		int numAddress = 0;
+
+		for ( i = 1; i <= MAX_MASTER_SERVERS; i++ ) {
+			sprintf(command, "sv_master%d", i);
+			masteraddress = Cvar_VariableString(command);
+
+			if(!*masteraddress)
+				continue;
+
+			numAddress++;
+
+			Com_sprintf(command, sizeof(command), "globalservers %d %s %s\n", i, Cmd_Argv(2), Cmd_ArgsFrom(3));
+			Cbuf_AddText(command);
+		}
+
+		if ( !numAddress ) {
+			Com_Printf( "CL_GlobalServers_f: Error: No master server addresses.\n");
+		}
+		return;
+	}
+
+	sprintf(command, "sv_master%d", masterNum);
 	masteraddress = Cvar_VariableString(command);
 	
 	if(!*masteraddress)
@@ -4332,7 +4367,7 @@ void CL_GlobalServers_f( void ) {
 	else if(i == 2)
 		to.port = BigShort(PORT_MASTER);
 
-	Com_Printf("Requesting servers from master %s...\n", masteraddress);
+	Com_Printf("Requesting servers from %s (%s)...\n", masteraddress, NET_AdrToStringwPort(to));
 
 	cls.numglobalservers = -1;
 	cls.pingUpdateSource = AS_GLOBAL;

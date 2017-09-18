@@ -331,18 +331,12 @@ void RE_BeginScene(const refdef_t *fd)
 
 	VectorCopy(tr.sunDirection, tr.refdef.sunDir);
 	if ( (tr.refdef.rdflags & RDF_NOWORLDMODEL) || !(r_depthPrepass->value) ){
-		tr.refdef.colorScale = 1.0f;
 		VectorSet(tr.refdef.sunCol, 0, 0, 0);
 		VectorSet(tr.refdef.sunAmbCol, 0, 0, 0);
 	}
 	else
 	{
-#if defined(USE_OVERBRIGHT)
-		float scale = (1 << (r_mapOverBrightBits->integer - tr.overbrightBits)) / 255.0f;
-#else
 		float scale = (1 << r_mapOverBrightBits->integer) / 255.0f;
-#endif
-		tr.refdef.colorScale = r_forceSun->integer ? r_forceSunMapLightScale->value : tr.mapLightScale;
 
 		if (r_forceSun->integer)
 			VectorScale(tr.sunLight, scale * r_forceSunLightScale->value, tr.refdef.sunCol);
@@ -408,7 +402,7 @@ void RE_BeginScene(const refdef_t *fd)
 
 	// derived info
 
-	tr.refdef.floatTime = tr.refdef.time * 0.001f;
+	tr.refdef.floatTime = tr.refdef.time * 0.001;
 
 	tr.refdef.numDrawSurfs = r_firstSceneDrawSurf;
 	tr.refdef.drawSurfs = backEndData->drawSurfs;
@@ -499,7 +493,7 @@ void RE_RenderScene( const refdef_t *fd ) {
 	// playing with even more shadows
 	if(glRefConfig.framebufferObject && r_sunlightMode->integer && !( fd->rdflags & RDF_NOWORLDMODEL ) && (r_forceSun->integer || tr.sunShadows))
 	{
-		if (r_shadowCascadeZFar != 0)
+		if (r_shadowCascadeZFar->integer != 0)
 		{
 			R_RenderSunShadowMaps(fd, 0);
 			R_RenderSunShadowMaps(fd, 1);

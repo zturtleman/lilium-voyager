@@ -4318,6 +4318,8 @@ CL_GlobalServers_f
 Originally master 0 was Internet and master 1 was MPlayer.
 ioquake3 2008; added support for requesting five separate master servers using 0-4.
 ioquake3 2017; made master 0 fetch all master servers and 1-5 request a single master server.
+
+Elite Force requests five separate master servers using master 0-4.
 ==================
 */
 void CL_GlobalServers_f( void ) {
@@ -4325,6 +4327,15 @@ void CL_GlobalServers_f( void ) {
 	int			count, i, masterNum;
 	char		command[1024], *masteraddress;
 	
+#ifdef ELITEFORCE
+	if ((count = Cmd_Argc()) < 3 || (masterNum = atoi(Cmd_Argv(1))) < 0 || masterNum >= MAX_MASTER_SERVERS)
+	{
+		Com_Printf("usage: globalservers <master# 0-%d> <protocol> [keywords]\n", MAX_MASTER_SERVERS-1);
+		return;	
+	}
+
+	sprintf(command, "sv_master%d", masterNum+1);
+#else
 	if ((count = Cmd_Argc()) < 3 || (masterNum = atoi(Cmd_Argv(1))) < 0 || masterNum > MAX_MASTER_SERVERS)
 	{
 		Com_Printf("usage: globalservers <master# 0-%d> <protocol> [keywords]\n", MAX_MASTER_SERVERS);
@@ -4355,6 +4366,7 @@ void CL_GlobalServers_f( void ) {
 	}
 
 	sprintf(command, "sv_master%d", masterNum);
+#endif
 	masteraddress = Cvar_VariableString(command);
 	
 	if(!*masteraddress)

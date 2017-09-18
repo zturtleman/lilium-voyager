@@ -94,7 +94,7 @@ float R_NoiseGet4f( float x, float y, float z, double t )
 
 // used in the shader functions (GF_RANDOM) to implement a quasi random flickering.
 #define VALR( a ) s_random[ ( a ) & ( NOISE_MASK )]
-int R_RandomOn(float t)
+int R_RandomOn(double t)
 {
 	return VALR((unsigned int) floor(t));
 }

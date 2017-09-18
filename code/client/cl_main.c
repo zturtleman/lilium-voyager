@@ -4401,13 +4401,8 @@ void CL_GlobalServers_f( void ) {
 		Com_sprintf(command, sizeof(command), "getservers %s",
 			Cmd_Argv(2));
 	else
-#ifdef ELITEFORCE
-		Com_sprintf(command, sizeof(command), "getservers %s",
-			Cmd_Argv(2));
-#else
 		Com_sprintf(command, sizeof(command), "getservers %s %s",
 			com_gamename->string, Cmd_Argv(2));
-#endif
 
 	for (i=3; i < count; i++)
 	{

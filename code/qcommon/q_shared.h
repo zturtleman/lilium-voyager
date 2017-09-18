@@ -75,16 +75,17 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #endif
 
 // Heartbeat for dpmaster protocol. You shouldn't change this unless you know what you're doing
-#ifdef ELITEFORCE
-  #define HEARTBEAT_FOR_MASTER		"STEF1"
-#else
-  #define HEARTBEAT_FOR_MASTER		"DarkPlaces"
-#endif
+#define HEARTBEAT_FOR_MASTER		"DarkPlaces"
 
 // When com_gamename is LEGACY_MASTER_GAMENAME, use quake3 master protocol.
 // You shouldn't change this unless you know what you're doing
+#ifdef ELITEFORCE
+#define LEGACY_MASTER_GAMENAME		"EliteForce"
+#define LEGACY_HEARTBEAT_FOR_MASTER	"STEF1"
+#else
 #define LEGACY_MASTER_GAMENAME		"Quake3Arena"
 #define LEGACY_HEARTBEAT_FOR_MASTER	"QuakeArena-1"
+#endif
 
 #define BASETA				"missionpack"
 

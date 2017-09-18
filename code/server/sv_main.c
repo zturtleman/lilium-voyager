@@ -243,6 +243,9 @@ void SV_MasterHeartbeat(const char *message)
 	int			i;
 	int			res;
 	int			netenabled;
+#ifdef ELITEFORCE
+	qboolean		dpmasterProtocol;
+#endif
 
 	netenabled = Cvar_VariableIntegerValue("net_enabled");
 
@@ -254,8 +257,17 @@ void SV_MasterHeartbeat(const char *message)
 	if ( svs.time < svs.nextHeartbeatTime )
 		return;
 
+#ifdef ELITEFORCE
+	if ( !Q_stricmp( com_gamename->string, LEGACY_MASTER_GAMENAME ) ) {
+		message = LEGACY_HEARTBEAT_FOR_MASTER;
+		dpmasterProtocol = qfalse;
+	} else {
+		dpmasterProtocol = qtrue;
+	}
+#else
 	if ( !Q_stricmp( com_gamename->string, LEGACY_MASTER_GAMENAME ) )
 		message = LEGACY_HEARTBEAT_FOR_MASTER;
+#endif
 
 	svs.nextHeartbeatTime = svs.time + HEARTBEAT_MSEC;
 
@@ -319,18 +331,21 @@ void SV_MasterHeartbeat(const char *message)
 		// ever incompatably changes
 
 		#ifdef ELITEFORCE
-		if(adr[i][0].type != NA_BAD)
-			NET_OutOfBandPrint(NS_SERVER, adr[i][0], "\\heartbeat\\%d\\gamename\\%s\\",
-					   Cvar_VariableIntegerValue("net_port"), message);
-		if(adr[i][1].type != NA_BAD)
-			NET_OutOfBandPrint(NS_SERVER, adr[i][1], "\\heartbeat\\%d\\gamename\\%s\\",
-					   Cvar_VariableIntegerValue("net_port6"), message);
-		#else
+		if ( !dpmasterProtocol ) {
+			if(adr[i][0].type != NA_BAD)
+				NET_OutOfBandPrint(NS_SERVER, adr[i][0], "\\heartbeat\\%d\\gamename\\%s\\",
+						   Cvar_VariableIntegerValue("net_port"), message);
+			if(adr[i][1].type != NA_BAD)
+				NET_OutOfBandPrint(NS_SERVER, adr[i][1], "\\heartbeat\\%d\\gamename\\%s\\",
+						   Cvar_VariableIntegerValue("net_port6"), message);
+			continue;
+		}
+		#endif
+
 		if(adr[i][0].type != NA_BAD)
 			NET_OutOfBandPrint( NS_SERVER, adr[i][0], "heartbeat %s\n", message);
 		if(adr[i][1].type != NA_BAD)
 			NET_OutOfBandPrint( NS_SERVER, adr[i][1], "heartbeat %s\n", message);
-		#endif
 	}
 }
 

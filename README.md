@@ -9,6 +9,7 @@ Differences from iostvef 1.38;
   * Player origin rounding is compatible with the original QVMs.
   * Network compatible with iostvef 1.37.
   * Support for ioquake3's OpenGL2 renderer.
+  * Client and server use separate config files like ioq3.
 
 Lilium Voyager code commits: [compare/upstream...master](https://github.com/zturtleman/lilium-voyager/compare/upstream...master)
 
@@ -36,7 +37,7 @@ Lilium Voyager is licensed under [the GNU GPLv2](COPYING.txt) (or at your option
 
 * Quake 3 - id Software
 * ioquake3 - ioquake3 contributors
-* [iostvef](http://thilo.kickchat.com/efport-progress/) - Thilo Schulz & contributers
+* iostvef - Thilo Schulz & contributers
 * Lilium Voyager - Zack Middleton
 
 

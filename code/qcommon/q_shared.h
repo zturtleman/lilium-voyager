@@ -97,7 +97,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define BASETA				"missionpack"
 
 #ifndef RENDERER_PREFIX
-  #define RENDERER_PREFIX "renderer_"
+  #ifdef ELITEFORCE
+    #define RENDERER_PREFIX "liliumvoyhm_renderer_"
+  #else
+    #define RENDERER_PREFIX "renderer_"
+  #endif
 #endif
 
 #ifndef PRODUCT_VERSION

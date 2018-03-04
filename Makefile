@@ -139,7 +139,11 @@ ifndef SERVERBIN
 endif
 
 ifndef RENDERER_PREFIX
-RENDERER_PREFIX=renderer_
+  ifeq ($(BUILD_ELITEFORCE),1)
+    RENDERER_PREFIX=liliumvoyhm_renderer_
+  else
+    RENDERER_PREFIX=renderer_
+  endif
 endif
 
 ifndef BASEGAME

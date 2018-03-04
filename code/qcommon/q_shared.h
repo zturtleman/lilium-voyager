@@ -27,10 +27,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // A user mod should never modify this file
 
 #ifdef STANDALONE
-  #define PRODUCT_NAME			"iofoo3"
-  #define BASEGAME			"foobar"
-  #define CLIENT_WINDOW_TITLE     	"changeme"
-  #define CLIENT_WINDOW_MIN_TITLE 	"changeme2"
+  #define PRODUCT_NAME				"iofoo3"
+  #define BASEGAME					"foobar"
+  #define CLIENT_WINDOW_TITLE		"changeme"
+  #define CLIENT_WINDOW_MIN_TITLE	"changeme2"
 
   // GNU/Linux: $HOME/.local/share/homepath-name (lower case and spaces replaced with hyphens)
   // MacOS: $HOME/Library/Application Support/Homepath Name
@@ -44,10 +44,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
   #define CINEMATICS_INTRO		"intro.roq"
 //  #define LEGACY_PROTOCOL	// You probably don't need this for your standalone game
 #elif defined ELITEFORCE
-  #define PRODUCT_NAME			"Lilium Voyager HM"
-  #define BASEGAME			"baseEF"
-  #define CLIENT_WINDOW_TITLE     	"Lilium Voyager Holomatch"
-  #define CLIENT_WINDOW_MIN_TITLE 	"liliumvoy"
+  #define PRODUCT_NAME				"Lilium Voyager HM"
+  #define BASEGAME					"baseEF"
+  #define CLIENT_WINDOW_TITLE		"Lilium Voyager Holomatch"
+  #define CLIENT_WINDOW_MIN_TITLE	"liliumvoy"
 
   // GNU/Linux: $HOME/.local/share/homepath-name (lower case and spaces replaced with hyphens)
   // MacOS: $HOME/Library/Application Support/Homepath Name
@@ -62,10 +62,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
   //#define CINEMATICS_INTRO		"intro.bik"
   #define LEGACY_PROTOCOL
 #else
-  #define PRODUCT_NAME			"ioq3"
-  #define BASEGAME			"baseq3"
-  #define CLIENT_WINDOW_TITLE     	"ioquake3"
-  #define CLIENT_WINDOW_MIN_TITLE 	"ioq3"
+  #define PRODUCT_NAME				"ioq3"
+  #define BASEGAME					"baseq3"
+  #define CLIENT_WINDOW_TITLE		"ioquake3"
+  #define CLIENT_WINDOW_MIN_TITLE	"ioq3"
 
   // GNU/Linux: $HOME/.local/share/homepath-name (lower case and spaces replaced with hyphens)
   // MacOS: $HOME/Library/Application Support/Homepath Name

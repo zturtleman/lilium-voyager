@@ -2788,9 +2788,6 @@ void Com_Init( char *commandLine ) {
 	if ( !com_homepath->string[0] ) {
 		Cvar_ForceReset( "com_homepath" );
 	}
-	
-	if(!com_basegame->string[0])
-		Cvar_ForceReset("com_basegame");
 
 	FS_InitFilesystem ();
 

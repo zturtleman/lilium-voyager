@@ -2784,7 +2784,13 @@ void Com_Init( char *commandLine ) {
 
 	com_standalone = Cvar_Get("com_standalone", "0", CVAR_ROM);
 	com_basegame = Cvar_Get("com_basegame", BASEGAME, CVAR_INIT);
-	com_homepath = Cvar_Get("com_homepath", "", CVAR_INIT|CVAR_PROTECTED);
+	com_homepath = Cvar_Get("com_homepath", HOMEPATH_NAME, CVAR_INIT|CVAR_PROTECTED);
+	if ( !com_homepath->string[0] ) {
+		Cvar_ForceReset( "com_homepath" );
+	}
+	
+	if(!com_basegame->string[0])
+		Cvar_ForceReset("com_basegame");
 
 	FS_InitFilesystem ();
 

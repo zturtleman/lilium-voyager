@@ -27,51 +27,58 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // A user mod should never modify this file
 
 #ifdef STANDALONE
-  #define PRODUCT_NAME				"iofoo3"
-  #define BASEGAME					"foobar"
-  #define CLIENT_WINDOW_TITLE		"changeme"
-  #define CLIENT_WINDOW_MIN_TITLE	"changeme2"
-  #define HOMEPATH_NAME_UNIX		".foo"
-  #define HOMEPATH_NAME_WIN			"FooBar"
-  #define HOMEPATH_NAME_MACOSX		HOMEPATH_NAME_WIN
+  #define PRODUCT_NAME			"iofoo3"
+  #define BASEGAME			"foobar"
+  #define CLIENT_WINDOW_TITLE     	"changeme"
+  #define CLIENT_WINDOW_MIN_TITLE 	"changeme2"
+
+  // GNU/Linux: $HOME/.local/share/homepath-name (lower case and spaces replaced with hyphens)
+  // MacOS: $HOME/Library/Application Support/Homepath Name
+  // Windows: %APPDATA%\Homepath Name
+  #define HOMEPATH_NAME				"FooBar"
+
 //  #define STEAMPATH_NAME			"Foo Bar"
 //  #define STEAMPATH_APPID         ""
   #define GAMENAME_FOR_MASTER		"foobar"	// must NOT contain whitespace
   #define CINEMATICS_LOGO		"foologo.roq"
   #define CINEMATICS_INTRO		"intro.roq"
 //  #define LEGACY_PROTOCOL	// You probably don't need this for your standalone game
+#elif defined ELITEFORCE
+  #define PRODUCT_NAME			"Lilium Voyager HM"
+  #define BASEGAME			"baseEF"
+  #define CLIENT_WINDOW_TITLE     	"Lilium Voyager Holomatch"
+  #define CLIENT_WINDOW_MIN_TITLE 	"liliumvoy"
+
+  // GNU/Linux: $HOME/.local/share/homepath-name (lower case and spaces replaced with hyphens)
+  // MacOS: $HOME/Library/Application Support/Homepath Name
+  // Windows: %APPDATA%\Homepath Name
+  #define HOMEPATH_NAME				"Lilium Voyager"
+
+  //#define STEAMPATH_NAME			"Quake 3 Arena"
+  //#define STEAMPATH_APPID			"2200"
+  //#define GOGPATH_ID				"1441704920"
+  #define GAMENAME_FOR_MASTER		"EliteForce"
+  //#define CINEMATICS_LOGO		"eflogo.bik"
+  //#define CINEMATICS_INTRO		"intro.bik"
+  #define LEGACY_PROTOCOL
 #else
-  #ifdef ELITEFORCE
-    #define PRODUCT_NAME		"Lilium Voyager HM"
-    #define BASEGAME			"baseEF"
-    #define CLIENT_WINDOW_TITLE     	"Lilium Voyager Holomatch"
-    #define CLIENT_WINDOW_MIN_TITLE 	"liliumvoy"
-    #define HOMEPATH_NAME_UNIX		".stvef"
-    #define HOMEPATH_NAME_WIN		"STVEF"
-    #define HOMEPATH_NAME_MACOSX	HOMEPATH_NAME_WIN
-    //#define STEAMPATH_NAME			"Quake 3 Arena"
-    //#define STEAMPATH_APPID			"2200"
-    //#define GOGPATH_ID			"1441704920"
-    #define GAMENAME_FOR_MASTER		"EliteForce"
-    //#define CINEMATICS_LOGO		"eflogo.bik"
-    //#define CINEMATICS_INTRO		"intro.bik"
-    #define LEGACY_PROTOCOL
-  #else
-    #define PRODUCT_NAME		"ioq3"
-    #define BASEGAME			"baseq3"
-    #define CLIENT_WINDOW_TITLE     	"ioquake3"
-    #define CLIENT_WINDOW_MIN_TITLE	"ioq3"
-    #define HOMEPATH_NAME_UNIX		".q3a"
-    #define HOMEPATH_NAME_WIN		"Quake3"
-    #define HOMEPATH_NAME_MACOSX	HOMEPATH_NAME_WIN
-    #define STEAMPATH_NAME			"Quake 3 Arena"
-    #define STEAMPATH_APPID			"2200"
-    #define GOGPATH_ID				"1441704920"
-    #define GAMENAME_FOR_MASTER		"Quake3Arena"
-    #define CINEMATICS_LOGO		"idlogo.RoQ"
-    #define CINEMATICS_INTRO		"intro.RoQ"
-    #define LEGACY_PROTOCOL
-  #endif
+  #define PRODUCT_NAME			"ioq3"
+  #define BASEGAME			"baseq3"
+  #define CLIENT_WINDOW_TITLE     	"ioquake3"
+  #define CLIENT_WINDOW_MIN_TITLE 	"ioq3"
+
+  // GNU/Linux: $HOME/.local/share/homepath-name (lower case and spaces replaced with hyphens)
+  // MacOS: $HOME/Library/Application Support/Homepath Name
+  // Windows: %APPDATA%\Homepath Name
+  #define HOMEPATH_NAME				"Lilium Quake3"
+
+  #define STEAMPATH_NAME			"Quake 3 Arena"
+  #define STEAMPATH_APPID			"2200"
+  #define GOGPATH_ID				"1441704920"
+  #define GAMENAME_FOR_MASTER		"Quake3Arena"
+  #define CINEMATICS_LOGO		"idlogo.RoQ"
+  #define CINEMATICS_INTRO		"intro.RoQ"
+  #define LEGACY_PROTOCOL
 #endif
 
 // Heartbeat for dpmaster protocol. You shouldn't change this unless you know what you're doing
@@ -88,6 +95,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #endif
 
 #define BASETA				"missionpack"
+
+#ifndef RENDERER_PREFIX
+  #define RENDERER_PREFIX "renderer_"
+#endif
 
 #ifndef PRODUCT_VERSION
   #ifdef ELITEFORCE

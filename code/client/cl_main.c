@@ -2826,9 +2826,6 @@ void CL_ConnectionlessPacket( netadr_t from, msg_t *msg ) {
 			      clc.challenge, qfalse);
 #endif
 
-		#ifdef ELITEFORCE
-		clc.netchan.compat = clc.compat;
-		#endif
 		clc.state = CA_CONNECTED;
 		clc.lastPacketSentTime = -9999;		// send first packet immediately
 		return;

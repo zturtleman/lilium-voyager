@@ -116,7 +116,7 @@ export CROSS_COMPILING
 
 ifndef VERSION
   ifeq ($(BUILD_ELITEFORCE),1)
-    VERSION=1.38
+    VERSION=1.39
   else
     VERSION=1.36
   endif

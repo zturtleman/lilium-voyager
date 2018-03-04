@@ -41,6 +41,9 @@ endif
 ifndef BUILD_RENDERER_OPENGL2
   BUILD_RENDERER_OPENGL2=
 endif
+ifndef BUILD_FINAL
+  BUILD_FINAL      =0
+endif
 
 #############################################################################
 #
@@ -306,6 +309,8 @@ ifneq ($(BUILD_CLIENT),0)
   endif
 endif
 
+ifneq ($(BUILD_FINAL),1)
+
 # Add git version info
 USE_GIT=
 ifeq ($(wildcard .git),.git)
@@ -314,6 +319,8 @@ ifeq ($(wildcard .git),.git)
     VERSION:=$(VERSION)_GIT_$(GIT_REV)
     USE_GIT=1
   endif
+endif
+
 endif
 
 

@@ -583,6 +583,17 @@ static void SVC_Status( netadr_t from ) {
 
 	strcpy( infostring, Cvar_InfoString( CVAR_SERVERINFO ) );
 
+#ifdef ELITEFORCE
+	// Raven's Elite Force master uses getstatus instead of getinfo and
+	// requires "protocol 24" to add the server to the master list.
+#ifdef LEGACY_PROTOCOL
+	if(com_legacyprotocol->integer > 0)
+		Info_SetValueForKey(infostring, "protocol", va("%i", com_legacyprotocol->integer));
+	else
+#endif
+		Info_SetValueForKey(infostring, "protocol", va("%i", com_protocol->integer));
+#endif
+
 	// echo back the parameter to status. so master servers can use it as a challenge
 	// to prevent timed spoofed reply packets that add ghost servers
 	Info_SetValueForKey( infostring, "challenge", Cmd_Argv(1) );

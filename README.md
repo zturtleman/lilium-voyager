@@ -18,7 +18,9 @@ The source code for the Elite Force game, cgame, and ui code is not included as 
 
 ## Compiling
 
-Lilium Voyager is compiled using `make`. For details see [building ioquake3](http://wiki.ioquake3.org/Building_ioquake3).
+Lilium Voyager is compiled using `make USE_CODEC_MP3=1`. For details see [building ioquake3](http://wiki.ioquake3.org/Building_ioquake3).
+
+The MP3 support library (libmad) is not included in the source tree (yet) so easier to just build without it. Though this prevents music and some sounds from playing.
 
 The Visual Studio project files are not supported.
 

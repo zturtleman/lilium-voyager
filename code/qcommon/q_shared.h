@@ -31,9 +31,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
   #define BASEGAME			"foobar"
   #define CLIENT_WINDOW_TITLE     	"changeme"
   #define CLIENT_WINDOW_MIN_TITLE 	"changeme2"
-  #define HOMEPATH_NAME_UNIX		".foo"
-  #define HOMEPATH_NAME_WIN		"FooBar"
-  #define HOMEPATH_NAME_MACOSX		HOMEPATH_NAME_WIN
+
+  // GNU/Linux: $HOME/.local/share/homepath-name (lower case and spaces replaced with hyphens)
+  // MacOS: $HOME/Library/Application Support/Homepath Name
+  // Windows: %APPDATA%\Homepath Name
+  #define HOMEPATH_NAME				"FooBar"
+
   #define GAMENAME_FOR_MASTER		"foobar"	// must NOT contain whitespace
 //  #define LEGACY_PROTOCOL	// You probably don't need this for your standalone game
 #else
@@ -41,9 +44,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
   #define BASEGAME			"baseq3"
   #define CLIENT_WINDOW_TITLE     	"ioquake3"
   #define CLIENT_WINDOW_MIN_TITLE 	"ioq3"
-  #define HOMEPATH_NAME_UNIX		".q3a"
-  #define HOMEPATH_NAME_WIN		"Quake3"
-  #define HOMEPATH_NAME_MACOSX		HOMEPATH_NAME_WIN
+
+  // GNU/Linux: $HOME/.local/share/homepath-name (lower case and spaces replaced with hyphens)
+  // MacOS: $HOME/Library/Application Support/Homepath Name
+  // Windows: %APPDATA%\Homepath Name
+  #define HOMEPATH_NAME				"Lilium Quake3"
+
   #define GAMENAME_FOR_MASTER		"Quake3Arena"
   #define LEGACY_PROTOCOL
 #endif

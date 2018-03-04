@@ -11,7 +11,7 @@ The intent of this project is to provide a baseline Quake 3 which may be used
 for further development and baseq3 fun.
 Some of the major features currently implemented are:
 
-  * SDL backend
+  * SDL 2 backend
   * OpenAL sound API support (multiple speaker support and better sound
     quality)
   * Full x86_64 support on Linux
@@ -102,7 +102,6 @@ Makefile.local:
   USE_OPENAL_DLOPEN    - link with OpenAL at runtime
   USE_CURL             - use libcurl for http/ftp download support
   USE_CURL_DLOPEN      - link with libcurl at runtime
-  USE_CODEC_MP3        - enable MP3 support
   USE_CODEC_VORBIS     - enable Ogg Vorbis support
   USE_CODEC_OPUS       - enable Ogg Opus support
   USE_MUMBLE           - enable Mumble support

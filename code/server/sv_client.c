@@ -140,7 +140,7 @@ void SV_GetChallenge(netadr_t from)
 	}
 
 	// always generate a new challenge number, so the client cannot circumvent sv_maxping
-	challenge->challenge = ( (rand() << 16) ^ rand() ) ^ svs.time;
+	challenge->challenge = ( ((unsigned int)rand() << 16) ^ (unsigned int)rand() ) ^ svs.time;
 	challenge->wasrefused = qfalse;
 	challenge->time = svs.time;
 
@@ -177,8 +177,7 @@ void SV_GetChallenge(netadr_t from)
 		{
 			// otherwise send their ip to the authorize server
 #ifndef ELITEFORCE
-			cvar_t	*fs;
-			char	game[1024];
+			const char *game;
 #endif
 
 			Com_DPrintf( "sending getIpAuthorize for %s\n", NET_AdrToString( from ));
@@ -188,10 +187,9 @@ void SV_GetChallenge(netadr_t from)
 				"getIpAuthorize %i %i.%i.%i.%i ",  challenge->challenge,
 				from.ip[0], from.ip[1], from.ip[2], from.ip[3] );
 #else
-			strcpy(game, BASEGAME);
-			fs = Cvar_Get ("fs_game", "", CVAR_INIT|CVAR_SYSTEMINFO );
-			if (fs && fs->string[0] != 0) {
-				strcpy(game, fs->string);
+			game = Cvar_VariableString( "fs_game" );
+			if (game[0] == 0) {
+				game = BASEGAME;
 			}
 			
 			// the 0 is for backwards compatibility with obsolete sv_allowanonymous flags

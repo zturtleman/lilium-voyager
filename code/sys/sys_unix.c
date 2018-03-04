@@ -44,6 +44,12 @@ qboolean stdinIsATTY;
 // Used to determine where to store user-specific files
 static char homePath[ MAX_OSPATH ] = { 0 };
 
+// Used to store the Steam Quake 3 installation path
+static char steamPath[ MAX_OSPATH ] = { 0 };
+
+// Used to store the GOG Quake 3 installation path
+static char gogPath[ MAX_OSPATH ] = { 0 };
+
 /*
 ==================
 Sys_DefaultHomePath
@@ -103,6 +109,42 @@ char *Sys_DefaultHomePath(void)
 
 /*
 ================
+Sys_SteamPath
+================
+*/
+char *Sys_SteamPath( void )
+{
+	// Disabled since Steam doesn't let you install Quake 3 on Mac/Linux
+#if 0 //#ifdef STEAMPATH_NAME
+	char *p;
+
+	if( ( p = getenv( "HOME" ) ) != NULL )
+	{
+#ifdef __APPLE__
+		char *steamPathEnd = "/Library/Application Support/Steam/SteamApps/common/" STEAMPATH_NAME;
+#else
+		char *steamPathEnd = "/.steam/steam/SteamApps/common/" STEAMPATH_NAME;
+#endif
+		Com_sprintf(steamPath, sizeof(steamPath), "%s%s", p, steamPathEnd);
+	}
+#endif
+
+	return steamPath;
+}
+
+/*
+================
+Sys_GogPath
+================
+*/
+char *Sys_GogPath( void )
+{
+	// GOG also doesn't let you install Quake 3 on Mac/Linux
+	return gogPath;
+}
+
+/*
+================
 Sys_Milliseconds
 ================
 */
@@ -145,6 +187,8 @@ qboolean Sys_RandomBytes( byte *string, int len )
 	fp = fopen( "/dev/urandom", "r" );
 	if( !fp )
 		return qfalse;
+
+	setvbuf( fp, NULL, _IONBF, 0 ); // don't buffer reads from /dev/urandom
 
 	if( fread( string, sizeof( byte ), len, fp ) != len )
 	{
@@ -474,7 +518,7 @@ void Sys_FreeFileList( char **list )
 ==================
 Sys_Sleep
 
-Block execution for msec or until input is recieved.
+Block execution for msec or until input is received.
 ==================
 */
 void Sys_Sleep( int msec )
@@ -570,7 +614,7 @@ void Sys_ErrorDialog( const char *error )
 	close( f );
 }
 
-#ifndef MACOS_X
+#ifndef __APPLE__
 static char execBuffer[ 1024 ];
 static char *execBufferPointer;
 static char *execArgv[ 16 ];
@@ -890,4 +934,45 @@ Sys_PIDIsRunning
 qboolean Sys_PIDIsRunning( int pid )
 {
 	return kill( pid, 0 ) == 0;
+}
+
+/*
+=================
+Sys_DllExtension
+
+Check if filename should be allowed to be loaded as a DLL.
+=================
+*/
+qboolean Sys_DllExtension( const char *name ) {
+	const char *p;
+	char c = 0;
+
+	if ( COM_CompareExtension( name, DLL_EXT ) ) {
+		return qtrue;
+	}
+
+	// Check for format of filename.so.1.2.3
+	p = strstr( name, DLL_EXT "." );
+
+	if ( p ) {
+		p += strlen( DLL_EXT );
+
+		// Check if .so is only followed for periods and numbers.
+		while ( *p ) {
+			c = *p;
+
+			if ( !isdigit( c ) && c != '.' ) {
+				return qfalse;
+			}
+
+			p++;
+		}
+
+		// Don't allow filename to end in a period. file.so., file.so.0., etc
+		if ( c != '.' ) {
+			return qtrue;
+		}
+	}
+
+	return qfalse;
 }

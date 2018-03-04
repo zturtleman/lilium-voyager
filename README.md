@@ -86,6 +86,7 @@ Makefile.local:
   BUILD_STANDALONE     - build binaries suited for stand-alone games
   SERVERBIN            - rename 'ioq3ded' server binary
   CLIENTBIN            - rename 'ioquake3' client binary
+  RENDERER_PREFIX      - rename 'renderer_' renderer binaries
   USE_RENDERER_DLOPEN  - build and use the renderer in a library
   BASEGAME             - rename 'baseq3'
   BASEGAME_CFLAGS      - custom CFLAGS for basegame

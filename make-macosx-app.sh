@@ -130,6 +130,7 @@ fi
 AVAILABLE_ARCHS=""
 
 IOQ3_VERSION=`grep '^VERSION=' Makefile | sed -e 's/.*=\(.*\)/\1/'`
+IOQ3_RENDERER_PREFIX=`grep '^RENDERER_PREFIX=' Makefile | sed -e 's/.*=\(.*\)/\1/'`
 IOQ3_CLIENT_ARCHS=""
 IOQ3_SERVER_ARCHS=""
 IOQ3_RENDERER_GL1_ARCHS=""
@@ -148,7 +149,7 @@ CGAME="cgame"
 GAME="qagame"
 UI="ui"
 
-RENDERER_OPENGL="renderer_opengl"
+RENDERER_OPENGL="${IOQ3_RENDERER_PREFIX}opengl"
 
 DEDICATED_NAME="ioq3ded"
 

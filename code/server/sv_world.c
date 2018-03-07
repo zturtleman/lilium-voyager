@@ -231,7 +231,7 @@ void SV_LinkEntity( sharedEntity_t *gEnt ) {
 				i = gEnt->r.maxs[0];
 				if (i<1)
 					i = 1;
-					if (i>255)
+				if (i>255)
 					i = 255;
 
 				// z is not symetric
@@ -255,7 +255,7 @@ void SV_LinkEntity( sharedEntity_t *gEnt ) {
 				i = gEnt->r.maxs[1];
 				if (i<1)
 					i = 1;
-					if (i>255)
+				if (i>255)
 					i = 255;
 
 				// z is not symetric

@@ -19,7 +19,7 @@ The source code for the Elite Force game, cgame, and ui code is not included as 
 
 ## Compiling
 
-Lilium Voyager is compiled using `make`. For details see [building ioquake3](http://wiki.ioquake3.org/Building_ioquake3).
+Lilium Voyager is compiled using `make`. For details see [building ioquake3](http://wiki.ioquake3.org/Building_ioquake3) and the [ioquake3 readme](README-ioq3.md).
 
 The Visual Studio project files are not supported.
 

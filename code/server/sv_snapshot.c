@@ -119,10 +119,7 @@ static void SV_EmitPacketEntities( clientSnapshot_t *from, clientSnapshot_t *to,
 SV_WriteSnapshotToClient
 ==================
 */
-#ifndef ELITEFORCE
-static
-#endif
-void SV_WriteSnapshotToClient( client_t *client, msg_t *msg ) {
+static void SV_WriteSnapshotToClient( client_t *client, msg_t *msg ) {
 	clientSnapshot_t	*frame, *oldframe;
 	int					lastframe;
 	int					i;
@@ -214,6 +211,66 @@ void SV_WriteSnapshotToClient( client_t *client, msg_t *msg ) {
 		}
 	}
 }
+
+
+#ifdef ELITEFORCE
+/*
+==================
+SV_WriteDummySnapshotToClient
+
+While a client downloads a pk3 using the legacy protocol they need
+a snapshot to update the reliableAcknowledge. This dummy snapshot
+does not include areabits, entities, or player state updates.
+==================
+*/
+void SV_WriteDummySnapshotToClient( client_t *client, msg_t *msg ) {
+	int					snapFlags;
+	playerState_t		ps;
+
+	MSG_WriteByte (msg, svc_snapshot);
+
+	// NOTE, MRE: now sent at the start of every message from server to client
+	// let the client know which reliable clientCommands we have received
+	#ifdef ELITEFORCE
+	if(msg->compat)
+		MSG_WriteLong( msg, client->lastClientCommand );
+	#else
+	//MSG_WriteLong( msg, client->lastClientCommand );
+	#endif
+
+	// send over the current server time so the client can drift
+	// its view of time to try to match
+	if( client->oldServerTime ) {
+		MSG_WriteLong (msg, sv.time + client->oldServerTime);
+	} else {
+		MSG_WriteLong (msg, sv.time);
+	}
+
+	// what we are delta'ing from
+	MSG_WriteByte (msg, 0);
+
+	snapFlags = svs.snapFlagServerBit;
+	if ( client->rateDelayed ) {
+		snapFlags |= SNAPFLAG_RATE_DELAYED;
+	}
+	if ( client->state != CS_ACTIVE ) {
+		snapFlags |= SNAPFLAG_NOT_ACTIVE;
+	}
+
+	MSG_WriteByte (msg, snapFlags);
+
+	// send over the areabits
+	MSG_WriteByte (msg, 0);
+	MSG_WriteData (msg, NULL, 0);
+
+	// delta encode the playerstate
+	Com_Memset (&ps, 0, sizeof(ps));
+	MSG_WriteDeltaPlayerstate( msg, &ps, &ps );
+
+	// delta encode the entities
+	MSG_WriteBits( msg, (MAX_GENTITIES-1), GENTITYNUM_BITS );
+}
+#endif
 
 
 /*

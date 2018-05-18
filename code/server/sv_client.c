@@ -1242,6 +1242,7 @@ int SV_SendDownloadMessages(void)
 			{
 				MSG_InitOOB(&msg, msgBuffer, sizeof(msgBuffer));
 				msg.compat = qtrue;
+				SV_WriteDummySnapshotToClient(cl, &msg);
 			}
 			else
 #endif
@@ -1255,12 +1256,7 @@ int SV_SendDownloadMessages(void)
 			if(retval)
 			{
 #ifdef ELITEFORCE
-				if(msg.compat)
-				{
-					// compat clients need svc_snapshot to update reliableAcknowledge
-					SV_WriteSnapshotToClient(cl, &msg);
-				}
-				else
+				if(!msg.compat)
 #endif
 					MSG_WriteByte(&msg, svc_EOF);
 				SV_Netchan_Transmit(cl, &msg);

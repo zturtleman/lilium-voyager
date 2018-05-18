@@ -401,7 +401,7 @@ void SV_SendMessageToClient( msg_t *msg, client_t *client );
 void SV_SendClientMessages( void );
 void SV_SendClientSnapshot( client_t *client );
 #ifdef ELITEFORCE
-void SV_WriteSnapshotToClient( client_t *client, msg_t *msg );
+void SV_WriteDummySnapshotToClient( client_t *client, msg_t *msg );
 #endif
 
 //

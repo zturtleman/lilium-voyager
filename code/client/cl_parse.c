@@ -213,6 +213,8 @@ void CL_ParseSnapshot( msg_t *msg ) {
 	#ifdef ELITEFORCE
 	if(msg->compat)
 		clc.reliableAcknowledge = MSG_ReadLong( msg );
+	#else
+	//clc.reliableAcknowledge = MSG_ReadLong( msg );
 	#endif
 
 	// read in the new snapshot to a temporary buffer

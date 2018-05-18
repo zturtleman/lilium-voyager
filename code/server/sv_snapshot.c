@@ -157,14 +157,14 @@ void SV_WriteSnapshotToClient( client_t *client, msg_t *msg ) {
 
 	MSG_WriteByte (msg, svc_snapshot);
 
-	#ifdef ELITEFORCE
-	if(msg->compat)
-	#endif
-		MSG_WriteLong( msg, client->lastClientCommand );
-
 	// NOTE, MRE: now sent at the start of every message from server to client
 	// let the client know which reliable clientCommands we have received
+	#ifdef ELITEFORCE
+	if(msg->compat)
+		MSG_WriteLong( msg, client->lastClientCommand );
+	#else
 	//MSG_WriteLong( msg, client->lastClientCommand );
+	#endif
 
 	// send over the current server time so the client can drift
 	// its view of time to try to match

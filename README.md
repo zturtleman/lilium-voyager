@@ -4,13 +4,14 @@
 
 Differences from ioEF 1.38-rc1 (2011):
 
-  * Better compatibility with newer operating systems (from ioq3).
-  * VoIP uses Opus codec instead of Speex (from ioq3).
   * Player origin rounding is compatible with the original QVMs.
+  * Fixed "read past end of server message" error after downloading a pk3 using EF 1.2 protocol (24).
   * Network compatible with ioEF 1.37.
   * Dedicated servers are listed on official Raven master server.
+  * Client and server use separate config files (from ioq3).
+  * Better compatibility with newer operating systems (from ioq3).
+  * VoIP uses Opus codec instead of Speex (from ioq3).
   * Support for ioquake3's OpenGL2 renderer.
-  * Client and server use separate config files like ioq3.
 
 Lilium Voyager code commits: [compare/upstream...master](https://github.com/zturtleman/lilium-voyager/compare/upstream...master)
 

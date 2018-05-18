@@ -615,7 +615,11 @@ void CL_ParseDownload ( msg_t *msg ) {
 		return;
 	}
 	
-	MSG_ReadData(msg, data, size);
+#ifdef ELITEFORCE
+	// check that size is more than 0 to avoid reading past end of server message
+	if (size)
+#endif
+		MSG_ReadData(msg, data, size);
 
 	if((clc.downloadBlock & 0xFFFF) != block)
 	{

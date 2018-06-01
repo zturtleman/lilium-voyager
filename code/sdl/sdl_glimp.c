@@ -266,7 +266,7 @@ static qboolean GLimp_GetProcAddresses( void ) {
 		sscanf( version, "%d.%d", &qglMajorVersion, &qglMinorVersion );
 	}
 
-	if ( QGL_VERSION_ATLEAST( 1, 1 ) ) {
+	if ( QGL_VERSION_ATLEAST( 1, 2 ) ) {
 		QGL_1_1_PROCS;
 		QGL_DESKTOP_1_1_PROCS;
 	} else if ( qglesMajorVersion == 1 && qglesMinorVersion >= 1 ) {
@@ -641,6 +641,8 @@ static int GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder, qbool
 			if( ( SDL_glContext = SDL_GL_CreateContext( SDL_window ) ) == NULL )
 			{
 				ri.Printf( PRINT_DEVELOPER, "SDL_GL_CreateContext failed: %s\n", SDL_GetError( ) );
+				SDL_DestroyWindow( SDL_window );
+				SDL_window = NULL;
 				continue;
 			}
 

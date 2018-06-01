@@ -340,7 +340,14 @@ void R_SetupEntityLighting( const trRefdef_t *refdef, trRefEntity_t *ent ) {
 		((byte *)&ent->ambientLightInt)[2] = 0x7F;
 		((byte *)&ent->ambientLightInt)[3] = 0xFF;
 
-		ent->lightDir[0] = ent->lightDir[1] = ent->lightDir[2] = 0;
+		ent->directedLight[0] = ent->directedLight[1] = ent->directedLight[2] = 0;
+
+		ent->lightDir[0] = ent->lightDir[1] = 0;
+		ent->lightDir[2] = 1;
+
+		ent->modelLightDir[0] = DotProduct( ent->lightDir, ent->e.axis[0] );
+		ent->modelLightDir[1] = DotProduct( ent->lightDir, ent->e.axis[1] );
+		ent->modelLightDir[2] = DotProduct( ent->lightDir, ent->e.axis[2] );
 		return;
 	}
 #endif

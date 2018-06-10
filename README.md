@@ -1,10 +1,10 @@
 <img src="https://raw.githubusercontent.com/zturtleman/lilium-voyager/master/misc/lilium.png" width="64">
 
-**Lilium Voyager** is a fork of [ioquake3](https://github.com/ioquake/ioq3) for running _Star Trek Voyager: Elite Force_ multiplayer. It is based on Thilo Schulz' [ioEF engine](http://thilo.kickchat.com/efport-progress/) (also known as iostvoyHM). The focus for Lilium Voyager is to maintain Elite Force multiplayer support on newer ioquake3 versions.
+**Lilium Voyager** is a fork of [ioquake3](https://github.com/ioquake/ioq3) for running _Star Trek Voyager: Elite Force Holomatch_ (multiplayer). It is based on Thilo Schulz' [ioEF engine](http://thilo.kickchat.com/efport-progress/) (also known as iostvoyHM). The focus for Lilium Voyager is to maintain Elite Force multiplayer support on newer ioquake3 versions.
 
 Differences from ioEF 1.38-rc1 (2011):
 
-  * Player origin rounding is compatible with the original QVMs.
+  * Player origin rounding is compatible with the original QVMs (x86, x86_64).
   * Fixed "read past end of server message" error after downloading a pk3 using EF 1.2 protocol (24).
   * Network compatible with ioEF 1.37.
   * Dedicated servers are listed on official Raven master server.

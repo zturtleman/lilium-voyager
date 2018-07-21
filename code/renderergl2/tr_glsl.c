@@ -968,6 +968,15 @@ void GLSL_InitGPUShaders(void)
 
 	startTime = ri.Milliseconds();
 
+	// OpenGL ES may not have enough attributes to fit ones used for vertex animation
+	if ( glRefConfig.maxVertexAttribs > ATTR_INDEX_NORMAL2 ) {
+		ri.Printf(PRINT_ALL, "Using GPU vertex animation\n");
+		glRefConfig.gpuVertexAnimation = qtrue;
+	} else {
+		ri.Printf(PRINT_ALL, "Using CPU vertex animation\n");
+		glRefConfig.gpuVertexAnimation = qfalse;
+	}
+
 	for (i = 0; i < GENERICDEF_COUNT; i++)
 	{	
 		if ((i & GENERICDEF_USE_VERTEX_ANIMATION) && (i & GENERICDEF_USE_BONE_ANIMATION))
@@ -990,6 +999,9 @@ void GLSL_InitGPUShaders(void)
 
 		if (i & GENERICDEF_USE_VERTEX_ANIMATION)
 		{
+			if (!glRefConfig.gpuVertexAnimation)
+				continue;
+
 			Q_strcat(extradefines, 1024, "#define USE_VERTEX_ANIMATION\n");
 			attribs |= ATTR_POSITION2 | ATTR_NORMAL2;
 		}
@@ -1039,6 +1051,9 @@ void GLSL_InitGPUShaders(void)
 	for (i = 0; i < FOGDEF_COUNT; i++)
 	{
 		if ((i & FOGDEF_USE_VERTEX_ANIMATION) && (i & FOGDEF_USE_BONE_ANIMATION))
+			continue;
+
+		if ((i & FOGDEF_USE_VERTEX_ANIMATION) && !glRefConfig.gpuVertexAnimation)
 			continue;
 
 		if ((i & FOGDEF_USE_BONE_ANIMATION) && !glRefConfig.glslMaxAnimatedBones)
@@ -1221,12 +1236,17 @@ void GLSL_InitGPUShaders(void)
 
 		if (i & LIGHTDEF_ENTITY_VERTEX_ANIMATION)
 		{
-			Q_strcat(extradefines, 1024, "#define USE_VERTEX_ANIMATION\n#define USE_MODELMATRIX\n");
-			attribs |= ATTR_POSITION2 | ATTR_NORMAL2;
+			Q_strcat(extradefines, 1024, "#define USE_MODELMATRIX\n");
 
-			if (r_normalMapping->integer)
+			if (glRefConfig.gpuVertexAnimation)
 			{
-				attribs |= ATTR_TANGENT2;
+				Q_strcat(extradefines, 1024, "#define USE_VERTEX_ANIMATION\n");
+				attribs |= ATTR_POSITION2 | ATTR_NORMAL2;
+
+				if (r_normalMapping->integer)
+				{
+					attribs |= ATTR_TANGENT2;
+				}
 			}
 		}
 		else if (i & LIGHTDEF_ENTITY_BONE_ANIMATION)
@@ -1259,6 +1279,9 @@ void GLSL_InitGPUShaders(void)
 	for (i = 0; i < SHADOWMAPDEF_COUNT; i++)
 	{
 		if ((i & SHADOWMAPDEF_USE_VERTEX_ANIMATION) && (i & SHADOWMAPDEF_USE_BONE_ANIMATION))
+			continue;
+
+		if ((i & SHADOWMAPDEF_USE_VERTEX_ANIMATION) && !glRefConfig.gpuVertexAnimation)
 			continue;
 
 		if ((i & SHADOWMAPDEF_USE_BONE_ANIMATION) && !glRefConfig.glslMaxAnimatedBones)
@@ -1521,7 +1544,7 @@ void GLSL_ShutdownGPUShaders(void)
 
 	ri.Printf(PRINT_ALL, "------- GLSL_ShutdownGPUShaders -------\n");
 
-	for (i = 0; i < ATTR_INDEX_COUNT; i++)
+	for (i = 0; i < ATTR_INDEX_COUNT && i < glRefConfig.maxVertexAttribs; i++)
 		qglDisableVertexAttribArray(i);
 
 	GL_BindNullProgram();

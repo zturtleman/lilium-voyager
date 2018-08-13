@@ -31,7 +31,7 @@ Additional make variables not in ioquake3:
 
 ## Discussion
 
-[Magical Clover Forum](https://forum.clover.moe). It supports creating an account or logging in using a GitHub account.
+  * [Discord (Fragmint★Wonderland)](https://discord.gg/7J2pjGD)
 
 
 ## License
@@ -49,6 +49,5 @@ Lilium Voyager is licensed under [the GNU GPLv2](COPYING.txt) (or at your option
 
 ## Contributing
 
-Please submit all patches at the [Magical Clover Forum](https://forum.clover.moe)
-or as a GitHub pull request.
+Please submit all patches as a GitHub pull request.
 

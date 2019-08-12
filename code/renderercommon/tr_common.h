@@ -80,6 +80,7 @@ extern glconfig_t	glConfig;		// outside of TR since it shouldn't be cleared duri
 extern qboolean  textureFilterAnisotropic;
 extern int       maxAnisotropy;
 extern float     displayAspect;
+extern qboolean  haveClampToEdge;
 
 // used by shader functions, including noise in renderercommon
 #define	FOG_TABLE_SIZE		256

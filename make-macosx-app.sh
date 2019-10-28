@@ -305,6 +305,8 @@ PLIST="${PLIST}
     <string>${PRODUCT_NAME} Copyright © 1999-2005 id Software, 2005-2018 ioquake3 contributors.</string>
     <key>NSPrincipalClass</key>
     <string>NSApplication</string>
+    <key>NSHighResolutionCapable</key>
+    <false/>
 </dict>
 </plist>
 "

@@ -129,7 +129,7 @@ fi
 
 AVAILABLE_ARCHS=""
 
-IOQ3_VERSION="1.39" # `grep '^VERSION=' Makefile | sed -e 's/.*=\(.*\)/\1/'`
+IOQ3_VERSION="1.40" # `grep '^VERSION=' Makefile | sed -e 's/.*=\(.*\)/\1/'`
 IOQ3_RENDERER_PREFIX="liliumvoyhm_renderer_" # `grep '^RENDERER_PREFIX=' Makefile | sed -e 's/.*=\(.*\)/\1/'`
 IOQ3_CLIENT_ARCHS=""
 IOQ3_SERVER_ARCHS=""

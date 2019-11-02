@@ -106,7 +106,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #ifndef PRODUCT_VERSION
   #ifdef ELITEFORCE
-    #define PRODUCT_VERSION "1.39"
+    #define PRODUCT_VERSION "1.40"
   #else
     #define PRODUCT_VERSION "1.36"
   #endif

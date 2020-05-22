@@ -327,9 +327,21 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 		// make sure we can get at our local stuff
 		FS_PureServerSetLoadedPaks("", "");
 		com_errorEntered = qfalse;
+#ifdef ELITEFORCE
+		if ( code == ERR_SERVERDISCONNECT ) {
+			Cbuf_AddText(va("err_dialog \"%s\"\n", com_errorMessage));
+		}
+#endif
 		longjmp (abortframe, -1);
 	} else if (code == ERR_DROP) {
+#ifdef ELITEFORCE
+		Com_Printf( S_COLOR_RED "********************\n"
+		            S_COLOR_MAGENTA "ERROR: %s\n"
+		            S_COLOR_RED "********************\n",
+		            com_errorMessage );
+#else
 		Com_Printf ("********************\nERROR: %s\n********************\n", com_errorMessage);
+#endif
 		VM_Forced_Unload_Start();
 		SV_Shutdown (va("Server crashed: %s",  com_errorMessage));
 		if ( restartClient ) {
@@ -340,6 +352,9 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 		VM_Forced_Unload_Done();
 		FS_PureServerSetLoadedPaks("", "");
 		com_errorEntered = qfalse;
+#ifdef ELITEFORCE
+		Cbuf_AddText(va("err_dialog \"%s\"\n", com_errorMessage));
+#endif
 		longjmp (abortframe, -1);
 	} else if ( code == ERR_NEED_CD ) {
 		VM_Forced_Unload_Start();

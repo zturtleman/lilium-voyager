@@ -293,15 +293,15 @@ rescan:
 		if ( argc >= 2 )
 		{
 			#ifdef ELITEFORCE
-			Cbuf_AddText(va("err_dialog \"%s\"", Cmd_Argv(1)));
+			// NOTE: EF 1.20 and ioEF don't display "Server disconnected - " in err_dialog.
+			if ( clc.compat )
+				Com_Error( ERR_SERVERDISCONNECT, "Server disconnected - %s", Cmd_Args() );
+			else
 			#endif
-			Com_Error( ERR_SERVERDISCONNECT, "Server disconnected - %s", Cmd_Argv( 1 ) );
+				Com_Error( ERR_SERVERDISCONNECT, "Server disconnected - %s", Cmd_Argv( 1 ) );
 		}
 		else
 		{
-			#ifdef ELITEFORCE
-			Cbuf_AddText(va("err_dialog \"%s\"", Cmd_Argv(1)));
-			#endif
 			Com_Error( ERR_SERVERDISCONNECT, "Server disconnected" );
 		}
 	}

@@ -626,7 +626,11 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 		return 0;
 
 	case BOTLIB_AI_LOAD_CHARACTER:
+#ifdef ELITEFORCE
+		return botlib_export->ai.BotLoadCharacter( VMA(1), args[2] );
+#else
 		return botlib_export->ai.BotLoadCharacter( VMA(1), VMF(2) );
+#endif
 	case BOTLIB_AI_FREE_CHARACTER:
 		botlib_export->ai.BotFreeCharacter( args[1] );
 		return 0;

@@ -126,9 +126,15 @@ vec2 GenTexCoords(int TCGen, vec3 position, vec3 normal, vec3 TCGenVector0, vec3
 	else if (TCGen == TCGEN_ENVIRONMENT_MAPPED)
 	{
 		vec3 viewer = normalize(u_LocalViewOrigin - position);
+#if defined(ELITEFORCE)
+		vec2 ref = reflect(viewer, normal).xy;
+		tex.s = ref.x * -0.5;
+		tex.t = ref.y * -0.5;
+#else
 		vec2 ref = reflect(viewer, normal).yz;
 		tex.s = ref.x * -0.5 + 0.5;
 		tex.t = ref.y *  0.5 + 0.5;
+#endif
 	}
 	else if (TCGen == TCGEN_VECTOR)
 	{

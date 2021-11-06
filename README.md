@@ -31,7 +31,7 @@ Additional make variables not in ioquake3:
 
 ## Discussion
 
-  * [Discord (Fragmint★Wonderland)](https://discord.gg/7J2pjGD)
+  * [Discord (Clover.moe Community)](https://discord.gg/7J2pjGD)
 
 
 ## License

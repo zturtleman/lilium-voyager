@@ -132,6 +132,16 @@ Section "Start Menu Shortcuts"
 
 SectionEnd
 
+Section "Protocol Handler"
+
+  WriteRegStr SHCTX "Software\Classes\quake3" "CustomUrlApplication" "$INSTDIR\ioquake3.x86.exe"
+  WriteRegStr SHCTX "Software\Classes\quake3" "CustomUrlArguments" '"%1"'
+  WriteRegStr SHCTX "Software\Classes\quake3" "URL Protocol" ""
+  WriteRegStr SHCTX "Software\Classes\quake3\DefaultIcon" "" "$INSTDIR\ioquake3.x86.exe,0"
+  WriteRegStr SHCTX "Software\Classes\quake3\shell\open\command" "" '"$INSTDIR\ioquake3.x86.exe" "%1"'
+
+SectionEnd
+
 Section "SDL2.dll"
 
   SetOutPath $INSTDIR
@@ -169,6 +179,7 @@ Section "Uninstall"
   ; Remove registry keys
   DeleteRegKey SHCTX "Software\Microsoft\Windows\CurrentVersion\Uninstall\ioquake3"
   DeleteRegKey SHCTX "Software\ioquake3"
+  DeleteRegKey SHCTX "Software\Classes\quake3"
 
   ; Remove files and uninstaller
   Delete $INSTDIR\baseq3\cgamex86.dll

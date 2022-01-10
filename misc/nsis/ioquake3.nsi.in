@@ -233,9 +233,9 @@ Section "Uninstall"
 SectionEnd
 
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
-  !insertmacro MUI_DESCRIPTION_TEXT ${ioquake3} "The game itself."
-  !insertmacro MUI_DESCRIPTION_TEXT ${StartMenuShortcuts} "Shortcuts to ioquake3 in the start menu."
-  !insertmacro MUI_DESCRIPTION_TEXT ${ProtocolHandler} "The protocol handler lets you connect to a game by clicking links in a web browser."
+  !insertmacro MUI_DESCRIPTION_TEXT ${ioquake3} "The game executables."
+  !insertmacro MUI_DESCRIPTION_TEXT ${StartMenuShortcuts} "Create shortcuts in the start menu."
+  !insertmacro MUI_DESCRIPTION_TEXT ${ProtocolHandler} "The protocol handler lets you connect to a game by clicking a link in a web browser."
   !insertmacro MUI_DESCRIPTION_TEXT ${SDL} "SDL files."
 !ifdef USE_OPENAL_DLOPEN
   !insertmacro MUI_DESCRIPTION_TEXT ${OpenAL} "OpenAL files."

@@ -714,10 +714,7 @@ char *Sys_ParseProtocolUri( char *uri )
 		}
 	}
 
-	int bufsize = strlen( command ) + 1;
-	char *data = Z_Malloc( bufsize );
-	Q_strncpyz( data, command, bufsize );
-	return data;
+	return CopyString(command);
 }
 #endif
 

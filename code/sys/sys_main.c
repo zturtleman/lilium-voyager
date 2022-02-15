@@ -47,10 +47,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "../qcommon/q_shared.h"
 #include "../qcommon/qcommon.h"
 
-#if defined(PROTOCOL_HANDLER) && defined(__APPLE__)
-void Sys_InitProtocolHandler();
-#endif
-
 static char binaryPath[ MAX_OSPATH ] = { 0 };
 static char installPath[ MAX_OSPATH ] = { 0 };
 
@@ -646,6 +642,20 @@ void Sys_ParseArgs( int argc, char **argv )
 	}
 }
 
+#ifdef PROTOCOL_HANDLER
+/*
+=================
+Sys_InitProtocolHandler
+
+See sys_osx.m for macOS implementation.
+=================
+*/
+#ifndef __APPLE__
+void Sys_InitProtocolHandler( )
+{
+}
+#endif
+
 /*
 =================
 Sys_ParseProtocolUri
@@ -656,65 +666,66 @@ operation is invalid or unsupported.
 At the moment only the "connect" command is supported.
 =================
 */
-#ifdef PROTOCOL_HANDLER
 char *Sys_ParseProtocolUri( char *uri )
 {
 	// Both "quake3://" and "quake3:" can be used
 	char *command;
-	if (strstr(uri, PROTOCOL_HANDLER "://") == uri)
+	if ( strstr( uri, PROTOCOL_HANDLER "://" ) == uri )
 	{
-		command = uri + strlen(PROTOCOL_HANDLER "://");
+		command = uri + strlen( PROTOCOL_HANDLER "://" );
 	}
-	else if (strstr(uri, PROTOCOL_HANDLER ":") == uri)
+	else if ( strstr(uri, PROTOCOL_HANDLER ":" ) == uri )
 	{
-		command = uri + strlen(PROTOCOL_HANDLER ":");
+		command = uri + strlen( PROTOCOL_HANDLER ":" );
 	}
 	else
 	{
-		Com_Printf ("Sys_ParseProtocolUri: unsupported protocol.\n");
+		Com_Printf( "Sys_ParseProtocolUri: unsupported protocol.\n" );
 		return NULL;
 	}
-	if (command[0] == '\0') {
+	if ( command[0] == '\0' )
+	{
 		return NULL;
 	}
-	Com_Printf ("Sys_ParseProtocolUri: %s\n", command);
+	Com_Printf( "Sys_ParseProtocolUri: %s\n", command );
 
 	// At the moment, only "connect/hostname:port" is supported
 	// For safety reasons, the "hostname:port" part can only
 	// contain characters from [a-zA-Z0-9.:-]
-	if (strstr(command, "connect/") != command)
+	if ( strstr( command, "connect/" ) != command )
 	{
-		Com_Printf ("Sys_ParseProtocolUri: unsupported command.\n");
+		Com_Printf( "Sys_ParseProtocolUri: unsupported command.\n" );
 		return NULL;
 	}
-	char *arg = strchr(command, '/');
-	if (arg == NULL || arg[1] == '\0' || arg[1] == '?')
+	char *arg = strchr( command, '/' );
+	if ( arg == NULL || arg[1] == '\0' || arg[1] == '?' )
 	{
-		Com_Printf ("Sys_ParseProtocolUri: missing argument.\n");
+		Com_Printf( "Sys_ParseProtocolUri: missing argument.\n" );
 		return NULL;
 	}
 	*arg = ' ';
 	arg++;
 
 	// Check for any unsupported characters
-	for (int i=0; arg[i] != '\0'; i++)
+	for ( int i=0; arg[i] != '\0'; i++ )
 	{
-		if (arg[i] == '?') {
+		if ( arg[i] == '?' )
+		{
 			// For forwards compatibility, any query string parameters are ignored (e.g. "?password=abcd")
 			// However, these are not passed on macOS, so it may be a bad idea to add them.
 			arg[i] = '\0';
 			break;
 		}
 
-		if (isalpha(arg[i]) == 0 && isdigit(arg[i]) == 0
-		 && arg[i] != '.' && arg[i] != ':' && arg[i] != '-')
+		if ( isalpha( arg[i] ) == 0 && isdigit( arg[i] ) == 0
+		 && arg[i] != '.' && arg[i] != ':' && arg[i] != '-' )
 		{
-			Com_Printf ("Sys_ParseProtocolUri: hostname contains unsupported characters.\n");
+			Com_Printf( "Sys_ParseProtocolUri: hostname contains unsupported characters.\n" );
 			return NULL;
 		}
 	}
 
-	return CopyString(command);
+	return CopyString( command );
 }
 #endif
 
@@ -833,16 +844,15 @@ int main( int argc, char **argv )
 	NET_Init( );
 
 #ifdef PROTOCOL_HANDLER
-#ifdef __APPLE__
 	Sys_InitProtocolHandler( );
-#else
-	if (argc > 1)
+#ifndef __APPLE__
+	if ( argc > 1 )
 	{
-		char *command = Sys_ParseProtocolUri(argv[1]);
-		if (command != NULL)
+		char *command = Sys_ParseProtocolUri( argv[1] );
+		if ( command != NULL )
 		{
-			int bufsize = strlen(command)+1;
-			Com_QueueEvent(0, SE_CONSOLE, 0, 0, bufsize, (void*) command);
+			int bufsize = strlen( command ) + 1;
+			Com_QueueEvent( 0, SE_CONSOLE, 0, 0, bufsize, (void*) command );
 		}
 	}
 #endif

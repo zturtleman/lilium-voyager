@@ -66,5 +66,6 @@ int Sys_PID( void );
 qboolean Sys_PIDIsRunning( int pid );
 
 #ifdef PROTOCOL_HANDLER
+void Sys_InitProtocolHandler( );
 char *Sys_ParseProtocolUri( char *uri );
 #endif

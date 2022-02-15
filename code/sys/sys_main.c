@@ -689,13 +689,31 @@ char *Sys_ParseProtocolUri( char *uri )
 	}
 	Com_Printf( "Sys_ParseProtocolUri: %s\n", command );
 
-	// At the moment, only "connect/hostname:port" is supported
+	// At the moment, "connect/hostname:port" is supported in addition to the format on https://efservers.com/
 	// For safety reasons, the "hostname:port" part can only
 	// contain characters from [a-zA-Z0-9.:-]
 	if ( strstr( command, "connect/" ) != command )
 	{
-		Com_Printf( "Sys_ParseProtocolUri: unsupported command.\n" );
-		return NULL;
+		// Attempt to be compatible with the protocol format used by https://efservers.com/
+		// Example URL: stvef:13.14.15.16;27961; {MAC}AllMapGladiator;ctf_crossroads2;0;
+		// Just convert the first ; to : and ignore everything after the port.
+		char *semicolon = strchr( command, ';' );
+		if ( semicolon == NULL )
+		{
+			Com_Printf( "Sys_ParseProtocolUri: unsupported command.\n" );
+			return NULL;
+		}
+		*semicolon = ':';
+		semicolon = strchr( semicolon, ';' );
+		if ( semicolon != NULL )
+		{
+			*semicolon = '\0';
+		}
+		char *buf = malloc( strlen( command ) + 10 );
+		strcpy( buf, "connect/" );
+		strcat( buf, command );
+		command = buf;
+		Com_Printf( "Sys_ParseProtocolUri: %s\n", command );
 	}
 	char *arg = strchr( command, '/' );
 	if ( arg == NULL || arg[1] == '\0' || arg[1] == '?' )

@@ -2501,7 +2501,7 @@ void Com_ReadCDKey( const char *filename ) {
 
 	FS_SV_FOpenFileRead( fbuffer, &f );
 	if ( !f ) {
-		Q_strncpyz( cl_cdkey, "                ", 17 );
+		Com_Memset( cl_cdkey, '\0', 17 );
 		return;
 	}
 
@@ -2566,7 +2566,7 @@ void Com_ReadCDKey( const char *filename ) {
 	if (CL_CDKeyValidate(buffer, NULL)) {
 		Q_strncpyz( cl_cdkey, buffer, 17 );
 	} else {
-		Q_strncpyz( cl_cdkey, "                ", 17 );
+		Com_Memset( cl_cdkey, '\0', 17 );
 	}
 #endif
 }
@@ -2585,7 +2585,7 @@ void Com_AppendCDKey( const char *filename ) {
 
 	FS_SV_FOpenFileRead( fbuffer, &f );
 	if (!f) {
-		Q_strncpyz( &cl_cdkey[16], "                ", 17 );
+		Com_Memset( &cl_cdkey[16], '\0', 17 );
 		return;
 	}
 
@@ -2597,7 +2597,7 @@ void Com_AppendCDKey( const char *filename ) {
 	if (CL_CDKeyValidate(buffer, NULL)) {
 		strcat( &cl_cdkey[16], buffer );
 	} else {
-		Q_strncpyz( &cl_cdkey[16], "                ", 17 );
+		Com_Memset( &cl_cdkey[16], '\0', 17 );
 	}
 }
 

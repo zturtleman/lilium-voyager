@@ -81,7 +81,7 @@ fi
 
 # It's interesting to see why a glibc version is required.
 # Another interesting thing is "ldd -v filename" to see what libaries are requires.
-VERBOSE=1
+VERBOSE=0
 if [ $VERBOSE -eq 1 ] ; then
 	# Find glibc lines, remove text before GLIBC, then sort by required glibc version
 	# "sort -t _ -k 2 -V" is short form of "sort --field-separator='_' --key=2 --version-sort"

@@ -62,7 +62,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
   //#define CINEMATICS_LOGO		"eflogo.bik"
   //#define CINEMATICS_INTRO		"intro.bik"
   #define LEGACY_PROTOCOL
-//  #define PROTOCOL_HANDLER		"foobar"
+  #define PROTOCOL_HANDLER		"stvef"
 #else
   #define PRODUCT_NAME				"ioq3"
   #define BASEGAME					"baseq3"

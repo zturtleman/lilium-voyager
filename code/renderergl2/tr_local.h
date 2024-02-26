@@ -638,8 +638,14 @@ typedef enum
 
 	UNIFORM_ENABLETEXTURES,
 
-	UNIFORM_DIFFUSETEXMATRIX,
-	UNIFORM_DIFFUSETEXOFFTURB,
+	UNIFORM_DIFFUSETEXMATRIX0,
+	UNIFORM_DIFFUSETEXMATRIX1,
+	UNIFORM_DIFFUSETEXMATRIX2,
+	UNIFORM_DIFFUSETEXMATRIX3,
+	UNIFORM_DIFFUSETEXMATRIX4,
+	UNIFORM_DIFFUSETEXMATRIX5,
+	UNIFORM_DIFFUSETEXMATRIX6,
+	UNIFORM_DIFFUSETEXMATRIX7,
 
 	UNIFORM_TCGEN0,
 	UNIFORM_TCGEN0VECTOR0,
@@ -1468,7 +1474,6 @@ typedef struct {
 
 	FBO_t *last2DFBO;
 	qboolean    colorMask[4];
-	qboolean    framePostProcessed;
 	qboolean    depthFill;
 } backEndState_t;
 
@@ -1990,6 +1995,7 @@ const void *RB_TakeVideoFrameCmd( const void *data );
 // tr_shader.c
 //
 shader_t	*R_FindShader( const char *name, int lightmapIndex, qboolean mipRawImage );
+shader_t	*R_FindShaderEx( const char *name, int lightmapIndex, qboolean mipRawImage, int realLightmapIndex );
 shader_t	*R_GetShaderByHandle( qhandle_t hShader );
 shader_t	*R_GetShaderByState( int index, long *cycleTime );
 shader_t *R_FindShaderByName( const char *name );

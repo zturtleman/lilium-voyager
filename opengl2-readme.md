@@ -65,10 +65,10 @@ For Win32:
 
 Cvars for API:
 
-* `r_useOpenGLES`                   - This enables using OpenGL ES 2+.
-                                   Many features are not supported such as sun shadows and HDR.
-                                     1 - Use OpenGL ES.
-                                     0 - Use desktop OpenGL.
+* `r_preferOpenGLES`                - This sets the preference for using OpenGL or OpenGL ES 2.
+                                   Many features are not supported when using OpenGL ES such as sun shadows and HDR.
+                                     1 - Prefer OpenGL ES 2+.
+                                     0 - Prefer desktop OpenGL.
                                      -1 - Automatically pick (default).
 
 Cvars for simple rendering features:

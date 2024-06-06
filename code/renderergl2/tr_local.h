@@ -49,8 +49,10 @@ QGL_ARB_vertex_array_object_PROCS;
 QGL_EXT_direct_state_access_PROCS;
 #undef GLE
 
-#define GL_INDEX_TYPE		GL_UNSIGNED_INT
-typedef unsigned int glIndex_t;
+#define GL_INDEX_TYPE		GL_UNSIGNED_SHORT
+typedef unsigned short glIndex_t;
+
+typedef unsigned int vaoCacheGlIndex_t;
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
@@ -1431,6 +1433,9 @@ typedef struct {
 	qboolean vertexArrayObject;
 	qboolean directStateAccess;
 
+	GLenum vaoCacheGlIndexType; // GL_UNSIGNED_INT or GL_UNSIGNED_SHORT
+	size_t vaoCacheGlIndexSize; // must be <= sizeof( vaoCacheGlIndex_t )
+
 	// OpenGL ES extensions
 	qboolean readDepth;
 	qboolean readStencil;
@@ -2220,6 +2225,7 @@ void            R_VaoList_f(void);
 void            RB_UpdateTessVao(unsigned int attribBits);
 
 void VaoCache_Commit(void);
+void VaoCache_DrawElements(int numIndexes, int firstIndex);
 void VaoCache_Init(void);
 void VaoCache_BindVao(void);
 void VaoCache_CheckAdd(qboolean *endSurface, qboolean *recycleVertexBuffer, qboolean *recycleIndexBuffer, int numVerts, int numIndexes);

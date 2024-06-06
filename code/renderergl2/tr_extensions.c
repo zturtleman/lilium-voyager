@@ -45,6 +45,17 @@ void GLimp_InitExtraExtensions(void)
 	if (strstr((char *)qglGetString(GL_RENDERER), "Intel"))
 		glRefConfig.intelGraphics = qtrue;
 
+	if (qglesMajorVersion)
+	{
+		glRefConfig.vaoCacheGlIndexType = GL_UNSIGNED_SHORT;
+		glRefConfig.vaoCacheGlIndexSize = sizeof(unsigned short);
+	}
+	else
+	{
+		glRefConfig.vaoCacheGlIndexType = GL_UNSIGNED_INT;
+		glRefConfig.vaoCacheGlIndexSize = sizeof(unsigned int);
+	}
+
 	// set DSA fallbacks
 #define GLE(ret, name, ...) qgl##name = GLDSA_##name;
 	QGL_EXT_direct_state_access_PROCS;
@@ -118,6 +129,19 @@ void GLimp_InitExtraExtensions(void)
 		{
 			glRefConfig.standardDerivatives = qtrue;
 			ri.Printf(PRINT_ALL, result[glRefConfig.standardDerivatives], extension);
+		}
+		else
+		{
+			ri.Printf(PRINT_ALL, result[2], extension);
+		}
+
+		// GL_OES_element_index_uint
+		extension = "GL_OES_element_index_uint";
+		if (SDL_GL_ExtensionSupported(extension))
+		{
+			glRefConfig.vaoCacheGlIndexType = GL_UNSIGNED_INT;
+			glRefConfig.vaoCacheGlIndexSize = sizeof(unsigned int);
+			ri.Printf(PRINT_ALL, result[1], extension);
 		}
 		else
 		{

@@ -43,5 +43,16 @@
             {"src": "tademo/vm/qagame.qvm", "dst": "/tademo/vm"},
             {"src": "tademo/vm/ui.qvm", "dst": "/tademo/vm"}
         ]
+    },
+    "baseEF": {
+        "files": [
+            {"src": "baseEF/pak0.pk3", "dst": "/baseEF"},
+            {"src": "baseEF/pak1.pk3", "dst": "/baseEF"},
+            {"src": "baseEF/pak2.pk3", "dst": "/baseEF"},
+            {"src": "baseEF/pak3.pk3", "dst": "/baseEF"},
+            {"src": "baseEF/vm/cgame.qvm", "dst": "/baseEF/vm"},
+            {"src": "baseEF/vm/qagame.qvm", "dst": "/baseEF/vm"},
+            {"src": "baseEF/vm/ui.qvm", "dst": "/baseEF/vm"}
+        ]
     }
 }

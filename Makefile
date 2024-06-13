@@ -166,7 +166,11 @@ ifndef RENDERER_PREFIX
 endif
 
 ifndef BASEGAME
-BASEGAME=baseq3
+  ifeq ($(BUILD_ELITEFORCE),1)
+    BASEGAME=baseEF
+  else
+    BASEGAME=baseq3
+  endif
 endif
 
 ifndef BASEGAME_CFLAGS

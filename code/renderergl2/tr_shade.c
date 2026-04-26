@@ -589,20 +589,27 @@ static void ComputeShaderColors( shaderStage_t *pStage, vec4_t baseColor, vec4_t
 			break;
 	}
 
-	// FIXME: find some way to implement this.
-#if 0
-	// if in greyscale rendering mode turn all color values into greyscale.
-	if(r_greyscale->integer)
+	if (pStage->rgbGen == CGEN_CONST || pStage->rgbGen == CGEN_FOG
+	  || pStage->rgbGen == CGEN_ENTITY || pStage->rgbGen == CGEN_ONE_MINUS_ENTITY)
 	{
-		int scale;
-		
-		for(i = 0; i < tess.numVertexes; i++)
+		// if in greyscale rendering mode turn all color values into greyscale.
+		if(r_greyscale->integer)
 		{
-			scale = (tess.svars.colors[i][0] + tess.svars.colors[i][1] + tess.svars.colors[i][2]) / 3;
-			tess.svars.colors[i][0] = tess.svars.colors[i][1] = tess.svars.colors[i][2] = scale;
+			float scale;
+
+			scale = LUMA(baseColor[0], baseColor[1], baseColor[2]);
+			baseColor[0] = baseColor[1] = baseColor[2] = scale;
+		}
+		else if(r_greyscale->value)
+		{
+			float scale;
+
+			scale = LUMA(baseColor[0], baseColor[1], baseColor[2]);
+			baseColor[0] = LERP(baseColor[0], scale, r_greyscale->value);
+			baseColor[1] = LERP(baseColor[1], scale, r_greyscale->value);
+			baseColor[2] = LERP(baseColor[2], scale, r_greyscale->value);
 		}
 	}
-#endif
 }
 
 
@@ -1566,6 +1573,36 @@ void RB_StageIteratorGeneric( void )
 
 	if (tess.useInternalVao)
 	{
+		if (vertexAttribs & ATTR_COLOR)
+		{
+			// if in greyscale rendering mode turn all color values into greyscale.
+			if(r_greyscale->integer)
+			{
+				uint16_t *color = tess.color[0];
+				int i;
+				int scale;
+				for(i = 0; i < tess.numVertexes; i++, color += 4)
+				{
+					scale = LUMA(color[0], color[1], color[2]);
+					color[0] = color[1] = color[2] = scale;
+				}
+			}
+			else if(r_greyscale->value)
+			{
+				uint16_t *color = tess.color[0];
+				int i;
+				float scale;
+
+				for(i = 0; i < tess.numVertexes; i++, color += 4)
+				{
+					scale = LUMA(color[0], color[1], color[2]);
+					color[0] = LERP(color[0], scale, r_greyscale->value);
+					color[1] = LERP(color[1], scale, r_greyscale->value);
+					color[2] = LERP(color[2], scale, r_greyscale->value);
+				}
+			}
+		}
+
 		RB_UpdateTessVao(vertexAttribs);
 	}
 	else
@@ -1761,8 +1798,6 @@ void RB_EndSurface( void ) {
 	tess.numIndexes = 0;
 	tess.numVertexes = 0;
 	tess.firstIndex = 0;
-	tess.useCacheVao = qfalse;
-	tess.useInternalVao = qfalse;
 
 	GLimp_LogComment( "----------\n" );
 }

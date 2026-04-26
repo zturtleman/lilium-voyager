@@ -266,6 +266,10 @@ typedef struct {
 	qboolean compat;
 #endif
 
+#ifdef USE_FLEXIBLE_DISPLAY
+	int dmflags;
+#endif
+
 	// big stuff at end of structure so most offsets are 15 bits or less
 	netchan_t	netchan;
 } clientConnection_t;
@@ -309,6 +313,9 @@ typedef struct {
 
 typedef struct {
 	qboolean	cddialog;			// bring up the cd needed dialog next frame
+#ifdef USE_FLEXIBLE_DISPLAY
+	qboolean	syncUICursor;		// sync mouse cursor position in UI next frame
+#endif
 
 	// when the server clears the hunk, all of these must be restarted
 	qboolean	rendererStarted;
@@ -351,6 +358,14 @@ typedef struct {
 	qhandle_t	charSetShader;
 	qhandle_t	whiteShader;
 	qhandle_t	consoleShader;
+
+	// for scaling from 640x480
+	float screenXScaleStretch;
+	float screenYScaleStretch;
+	float screenXScale;
+	float screenYScale;
+	float screenXBias;
+	float screenYBias;
 } clientStatic_t;
 
 extern	clientStatic_t		cls;
@@ -452,6 +467,12 @@ extern	cvar_t	*cl_voip;
 #define VOIP_MAX_PACKET_SAMPLES		( VOIP_MAX_FRAME_SAMPLES * VOIP_MAX_PACKET_FRAMES )
 #endif
 
+#ifdef USE_FLEXIBLE_DISPLAY
+extern	cvar_t	*cl_viewsize;
+extern	cvar_t	*cl_viewmode;
+extern	cvar_t	*cl_flexibleDisplay;
+#endif
+
 //=================================================
 
 //
@@ -486,6 +507,10 @@ qboolean CL_CDKeyValidate( const char *key, const char *checksum );
 int CL_ServerStatus( char *serverAddress, char *serverStatusString, int maxLen );
 
 qboolean CL_CheckPaused(void);
+
+#ifdef USE_FLEXIBLE_DISPLAY
+void CL_WindowResized( int width, int height );
+#endif
 
 //
 // cl_input
@@ -524,6 +549,7 @@ void CL_Voip_f( void );
 #endif
 
 void CL_SystemInfoChanged( void );
+void CL_ServerInfoChanged( void );
 void CL_ParseServerMessage( msg_t *msg );
 
 //====================================================================
@@ -569,7 +595,27 @@ void	SCR_DebugGraph (float value);
 
 int		SCR_GetBigStringWidth( const char *str );	// returns in virtual 640x480 coordinates
 
+// horizontal and vertical alignment flags
+// for SCR_SetScreenPlacement() / SCR_AdjustFrom640()
+#define SCR_HOR_CENTER 0x01
+#define SCR_HOR_LEFT 0x02
+#define SCR_HOR_RIGHT 0x03
+#define SCR_HOR_STRETCH 0x04
+#define SCR_HOR_MASK 0x07
+#define SCR_HOR_NATIVE 0x08
+
+#define SCR_VERT_CENTER 0x10
+#define SCR_VERT_TOP 0x20
+#define SCR_VERT_BOTTOM 0x30
+#define SCR_VERT_STRETCH 0x40
+#define SCR_VERT_MASK 0x70
+#define SCR_VERT_NATIVE 0x80
+
+void	SCR_SetScreenPlacement( int placement );
+void	SCR_SetNativeScale( float scale );
 void	SCR_AdjustFrom640( float *x, float *y, float *w, float *h );
+void	SCR_AdjustTo640( float *x, float *y, float *w, float *h );
+
 void	SCR_FillRect( float x, float y, float width, float height, 
 					 const float *color );
 void	SCR_DrawPic( float x, float y, float width, float height, qhandle_t hShader );
@@ -588,15 +634,20 @@ void	SCR_DrawSmallChar( int x, int y, int ch );
 // cl_cin.c
 //
 
+// module that started the cinematic
+#define CIN_CLIENT 1
+#define CIN_UI 2
+#define CIN_CGAME 3
+
 void CL_PlayCinematic_f( void );
 void SCR_DrawCinematic (void);
 void SCR_RunCinematic (void);
 void SCR_StopCinematic (void);
-int CIN_PlayCinematic( const char *arg0, int xpos, int ypos, int width, int height, int bits);
+int CIN_PlayCinematic( const char *arg0, int xpos, int ypos, int width, int height, int bits, int module);
 e_status CIN_StopCinematic(int handle);
 e_status CIN_RunCinematic (int handle);
 void CIN_DrawCinematic (int handle);
-void CIN_SetExtents (int handle, int x, int y, int w, int h);
+void CIN_SetExtents (int handle, int x, int y, int w, int h, int module);
 void CIN_SetLooping (int handle, qboolean loop);
 void CIN_UploadCinematic(int handle);
 void CIN_CloseAllVideos(void);
@@ -611,6 +662,7 @@ void CL_CGameRendering( stereoFrame_t stereo );
 void CL_SetCGameTime( void );
 void CL_FirstSnapshot( void );
 void CL_ShaderStateChanged(void);
+void CL_AdjustFromCGame( float *x, float *y, float *w, float *h );
 
 //
 // cl_ui.c
@@ -621,6 +673,10 @@ int Key_GetCatcher( void );
 void Key_SetCatcher( int catcher );
 void LAN_LoadCachedServers( void );
 void LAN_SaveServersToCache( void );
+#ifdef USE_FLEXIBLE_DISPLAY
+void CL_AdjustFromUI( float *x, float *y, float *w, float *h );
+void CL_AdjustToUI( float *x, float *y, float *w, float *h );
+#endif
 
 
 //

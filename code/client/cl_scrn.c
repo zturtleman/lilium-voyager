@@ -24,6 +24,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "client.h"
 
 qboolean	scr_initialized;		// ready to draw
+int			scr_placement;
+float		scr_nativeScale = 1.0f;
 
 cvar_t		*cl_timegraph;
 cvar_t		*cl_debuggraph;
@@ -51,36 +53,185 @@ void SCR_DrawNamedPic( float x, float y, float width, float height, const char *
 
 /*
 ================
+SCR_SetScreenPlacement
+================
+*/
+void SCR_SetScreenPlacement( int placement ) {
+	scr_placement = placement;
+}
+
+/*
+================
+SCR_SetNativeScale
+================
+*/
+void SCR_SetNativeScale( float scale ) {
+	scr_nativeScale = scale;
+}
+
+/*
+================
 SCR_AdjustFrom640
 
 Adjusted for resolution and screen aspect ratio
 ================
 */
 void SCR_AdjustFrom640( float *x, float *y, float *w, float *h ) {
-	float	xscale;
-	float	yscale;
+	int placement = scr_placement;
 
-#if 0
-		// adjust for wide screens
-		if ( cls.glconfig.vidWidth * 480 > cls.glconfig.vidHeight * 640 ) {
-			*x += 0.5 * ( cls.glconfig.vidWidth - ( cls.glconfig.vidHeight * 640 / 480 ) );
+	if ( ( placement & SCR_HOR_MASK ) == SCR_HOR_STRETCH ) {
+		// scale for screen sizes (not aspect correct in wide screen)
+		if ( w != NULL ) {
+			*w *= cls.screenXScaleStretch;
 		}
-#endif
+		if ( x != NULL ) {
+			*x *= cls.screenXScaleStretch;
+		}
+	} else {
+		// scale for screen sizes
+		if ( placement & SCR_HOR_NATIVE ) {
+			if ( w != NULL ) {
+				*w *= scr_nativeScale;
+			}
 
-	// scale for screen sizes
-	xscale = cls.glconfig.vidWidth / 640.0;
-	yscale = cls.glconfig.vidHeight / 480.0;
-	if ( x ) {
-		*x *= xscale;
+			if ( x != NULL ) {
+				*x *= scr_nativeScale;
+			}
+		} else {
+			if ( w != NULL ) {
+				*w *= cls.screenXScale;
+			}
+
+			if ( x != NULL ) {
+				*x *= cls.screenXScale;
+			}
+		}
+
+		if ( x != NULL ) {
+			if ( ( placement & SCR_HOR_MASK ) == SCR_HOR_CENTER ) {
+				*x += cls.screenXBias;
+			} else if ( ( placement & SCR_HOR_MASK ) == SCR_HOR_RIGHT ) {
+				*x += cls.screenXBias*2;
+			}
+		}
 	}
-	if ( y ) {
-		*y *= yscale;
+
+	if ( ( placement & SCR_VERT_MASK ) == SCR_VERT_STRETCH ) {
+		if ( h != NULL ) {
+			*h *= cls.screenYScaleStretch;
+		}
+		if ( y != NULL ) {
+			*y *= cls.screenYScaleStretch;
+		}
+	} else {
+		if ( placement & SCR_VERT_NATIVE ) {
+			if ( h != NULL ) {
+				*h *= scr_nativeScale;
+			}
+
+			if ( y != NULL ) {
+				*y *= scr_nativeScale;
+			}
+		} else {
+			if ( h != NULL ) {
+				*h *= cls.screenYScale;
+			}
+
+			if ( y != NULL ) {
+				*y *= cls.screenYScale;
+			}
+		}
+
+		if ( y != NULL ) {
+			if ( ( placement & SCR_VERT_MASK ) == SCR_VERT_CENTER ) {
+				*y += cls.screenYBias;
+			} else if ( ( placement & SCR_VERT_MASK ) == SCR_VERT_BOTTOM ) {
+				*y += cls.screenYBias*2;
+			}
+		}
 	}
-	if ( w ) {
-		*w *= xscale;
+}
+
+/*
+================
+SCR_AdjustTo640
+
+Adjusted for resolution and screen aspect ratio
+================
+*/
+void SCR_AdjustTo640( float *x, float *y, float *w, float *h ) {
+	int placement = scr_placement;
+
+	if ( ( placement & SCR_HOR_MASK ) == SCR_HOR_STRETCH ) {
+		// scale for screen sizes (not aspect correct in wide screen)
+		if ( w != NULL ) {
+			*w /= cls.screenXScaleStretch;
+		}
+		if ( x != NULL ) {
+			*x /= cls.screenXScaleStretch;
+		}
+	} else {
+		if ( x != NULL ) {
+			if ( ( placement & SCR_HOR_MASK ) == SCR_HOR_CENTER ) {
+				*x -= cls.screenXBias;
+			} else if ( ( placement & SCR_HOR_MASK ) == SCR_HOR_RIGHT ) {
+				*x -= cls.screenXBias*2;
+			}
+		}
+
+		// scale for screen sizes
+		if ( placement & SCR_HOR_NATIVE ) {
+			if ( w != NULL ) {
+				*w /= scr_nativeScale;
+			}
+
+			if ( x != NULL ) {
+				*x /= scr_nativeScale;
+			}
+		} else {
+			if ( w != NULL ) {
+				*w /= cls.screenXScale;
+			}
+
+			if ( x != NULL ) {
+				*x /= cls.screenXScale;
+			}
+		}
 	}
-	if ( h ) {
-		*h *= yscale;
+
+	if ( ( placement & SCR_VERT_MASK ) == SCR_VERT_STRETCH ) {
+		if ( h != NULL ) {
+			*h /= cls.screenYScaleStretch;
+		}
+		if ( y != NULL ) {
+			*y /= cls.screenYScaleStretch;
+		}
+	} else {
+		if ( y != NULL ) {
+			if ( ( placement & SCR_VERT_MASK ) == SCR_VERT_CENTER ) {
+				*y -= cls.screenYBias;
+			} else if ( ( placement & SCR_VERT_MASK ) == SCR_VERT_BOTTOM ) {
+				*y -= cls.screenYBias*2;
+			}
+		}
+
+		if ( placement & SCR_HOR_NATIVE ) {
+			if ( h != NULL ) {
+				*h /= scr_nativeScale;
+			}
+
+			if ( y != NULL ) {
+				*y /= scr_nativeScale;
+			}
+		} else {
+			if ( h != NULL ) {
+				*h /= cls.screenYScale;
+			}
+
+			if ( y != NULL ) {
+				*y /= cls.screenYScale;
+			}
+		}
 	}
 }
 
@@ -160,6 +311,7 @@ static void SCR_DrawChar( int x, int y, float size, int ch ) {
 void SCR_DrawSmallChar( int x, int y, int ch ) {
 	int row, col;
 	float frow, fcol;
+	float	ax, ay, aw, ah;
 	float vsize, hsize;
 
 	ch &= 255;
@@ -171,6 +323,12 @@ void SCR_DrawSmallChar( int x, int y, int ch ) {
 	if ( y < -SMALLCHAR_HEIGHT ) {
 		return;
 	}
+
+	ax = x;
+	ay = y;
+	aw = SMALLCHAR_WIDTH;
+	ah = SMALLCHAR_HEIGHT;
+	SCR_AdjustFrom640( &ax, &ay, &aw, &ah );
 
 	row = ch>>4;
 	col = ch&15;
@@ -184,7 +342,7 @@ void SCR_DrawSmallChar( int x, int y, int ch ) {
 	hsize = 0.0625;
 #endif
 
-	re.DrawStretchPic( x, y, SMALLCHAR_WIDTH, SMALLCHAR_HEIGHT,
+	re.DrawStretchPic( ax, ay, aw, ah,
 					   fcol, frow, 
 					   fcol + hsize, frow + vsize, 
 					   cls.charSetShader );
@@ -496,13 +654,40 @@ void SCR_DrawScreenField( stereoFrame_t stereoFrame ) {
 
 	// wide aspect ratio screens need to have the sides cleared
 	// unless they are displaying game renderings
-	if ( uiFullscreen || clc.state < CA_LOADING ) {
-		if ( cls.glconfig.vidWidth * 480 > cls.glconfig.vidHeight * 640 ) {
+	if ( uiFullscreen || clc.state < CA_LOADING
+#ifdef USE_FLEXIBLE_DISPLAY
+	  || ( cl_flexibleDisplay->integer && ( clc.state != CA_ACTIVE || cl_viewmode->integer == 1 ) )
+#endif
+	  ) {
+		if ( cls.screenXBias || cls.screenYBias ) {
+			int left = cls.screenXBias + 0.5f;
+			int right = cls.glconfig.vidWidth - left;
+			int top = cls.screenYBias + 0.5f;
+			int bottom = cls.glconfig.vidHeight - top;
+
 			re.SetColor( g_color_table[0] );
-			re.DrawStretchPic( 0, 0, cls.glconfig.vidWidth, cls.glconfig.vidHeight, 0, 0, 0, 0, cls.whiteShader );
+
+			if ( cls.screenXBias ) {
+				// clear left
+				re.DrawStretchPic( 0, 0, left, cls.glconfig.vidHeight, 0, 0, 0, 0, cls.whiteShader );
+
+				// clear right
+				re.DrawStretchPic( right, 0, cls.glconfig.vidWidth - right, cls.glconfig.vidHeight, 0, 0, 0, 0, cls.whiteShader );
+			}
+
+			if ( cls.screenYBias ) {
+				// clear top
+				re.DrawStretchPic( left, 0, right - left, top, 0, 0, 0, 0, cls.whiteShader );
+
+				// clear bottom
+				re.DrawStretchPic( left, bottom, right - left, cls.glconfig.vidHeight - bottom, 0, 0, 0, 0, cls.whiteShader );
+			}
+
 			re.SetColor( NULL );
 		}
 	}
+
+	SCR_SetScreenPlacement( SCR_VERT_STRETCH | SCR_HOR_STRETCH );
 
 	// if the menu is going to cover the entire screen, we
 	// don't need to render anything under it
@@ -518,6 +703,9 @@ void SCR_DrawScreenField( stereoFrame_t stereoFrame ) {
 			// force menu up
 			S_StopAllSounds();
 			VM_Call( uivm, UI_SET_ACTIVE_MENU, UIMENU_MAIN );
+#ifdef USE_FLEXIBLE_DISPLAY
+			cls.syncUICursor = qtrue;
+#endif
 			break;
 		case CA_CONNECTING:
 		case CA_CHALLENGING:
@@ -541,6 +729,17 @@ void SCR_DrawScreenField( stereoFrame_t stereoFrame ) {
 		case CA_ACTIVE:
 			// always supply STEREO_CENTER as vieworg offset is now done by the engine.
 			CL_CGameRendering(stereoFrame);
+#ifdef USE_FLEXIBLE_DISPLAY
+			if ( cl_flexibleDisplay->integer ) {
+				if ( cl_viewmode->integer <= 2 ) {
+					SCR_SetScreenPlacement( SCR_VERT_CENTER | SCR_HOR_CENTER );
+				} else if ( cl_viewmode->integer == 3 ) {
+					SCR_SetScreenPlacement( SCR_VERT_TOP | SCR_HOR_CENTER );
+				} else {
+					SCR_SetScreenPlacement( SCR_VERT_STRETCH | SCR_HOR_STRETCH );
+				}
+			}
+#endif
 			SCR_DrawDemoRecording();
 #ifdef USE_VOIP
 			SCR_DrawVoipMeter();
@@ -551,7 +750,17 @@ void SCR_DrawScreenField( stereoFrame_t stereoFrame ) {
 
 	// the menu draws next
 	if ( Key_GetCatcher( ) & KEYCATCH_UI && uivm ) {
+#ifdef USE_FLEXIBLE_DISPLAY
+		if ( cls.syncUICursor ) {
+			IN_SyncMousePosition();
+			cls.syncUICursor = qfalse;
+		}
+#endif
 		VM_Call( uivm, UI_REFRESH, cls.realtime );
+	} else {
+#ifdef USE_FLEXIBLE_DISPLAY
+		cls.syncUICursor = qtrue;
+#endif
 	}
 
 	// console draws next

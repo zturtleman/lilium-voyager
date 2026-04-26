@@ -592,7 +592,76 @@ CL_GetGlConfig
 */
 static void CL_GetGlconfig( glconfig_t *config ) {
 	*config = cls.glconfig;
+
+#ifdef USE_FLEXIBLE_DISPLAY
+	if ( cl_flexibleDisplay->integer ) {
+		config->vidWidth = 640;
+		config->vidHeight = 480;
+	}
+#endif
 }
+
+#ifdef USE_FLEXIBLE_DISPLAY
+/*
+====================
+CL_GetUIScreenPlacement
+====================
+*/
+static int CL_GetUIScreenPlacement( void ) {
+	int placement;
+
+	if ( cl_viewmode->integer <= 2 ) {
+		placement = SCR_VERT_CENTER | SCR_HOR_CENTER;
+	} else if ( cl_viewmode->integer == 3 ) {
+		// draw the Team Arena in-game menu at the top of the screen
+		if ( clc.state == CA_ACTIVE && Cvar_Flags( "ui_new" ) != CVAR_NONEXISTENT ) {
+			placement = SCR_VERT_TOP | SCR_HOR_CENTER;
+		} else {
+			placement = SCR_VERT_CENTER | SCR_HOR_CENTER;
+		}
+	} else if ( cl_viewmode->integer == 5 ) {
+		placement = SCR_VERT_STRETCH | SCR_HOR_STRETCH;
+	} else {
+		// baseq3 was stretched vertically but centered horizontally in
+		// wide resolutions, Team Arena (with ui_new cvar) was stretched
+		if ( Cvar_Flags( "ui_new" ) != CVAR_NONEXISTENT ) {
+			placement = SCR_VERT_STRETCH | SCR_HOR_STRETCH;
+		} else {
+			placement = SCR_VERT_STRETCH | SCR_HOR_CENTER;
+		}
+	}
+
+	return placement;
+}
+
+/*
+====================
+CL_AdjustFromUI
+
+This is only called if cl_flexibleDisplay is enabled.
+====================
+*/
+void CL_AdjustFromUI( float *x, float *y, float *w, float *h ) {
+	int placement = CL_GetUIScreenPlacement();
+
+	SCR_SetScreenPlacement( placement );
+	SCR_AdjustFrom640( x, y, w, h );
+}
+
+/*
+================
+CL_AdjustToUI
+
+Convert native coords to UI coords.
+================
+*/
+void CL_AdjustToUI( float *x, float *y, float *w, float *h ) {
+	int placement = CL_GetUIScreenPlacement();
+
+	SCR_SetScreenPlacement( placement );
+	SCR_AdjustTo640( x, y, w, h );
+}
+#endif
 
 /*
 ====================
@@ -850,6 +919,29 @@ intptr_t CL_UISystemCalls( intptr_t *args ) {
 		return 0;
 
 	case UI_R_RENDERSCENE:
+#ifdef USE_FLEXIBLE_DISPLAY
+		if ( cl_flexibleDisplay->integer ) {
+			refdef_t fd;
+			float x, y, width, height;
+
+			memcpy( &fd, VMA(1), sizeof( refdef_t ) );
+
+			x = fd.x;
+			y = fd.y;
+			width = fd.width;
+			height = fd.height;
+
+			CL_AdjustFromUI( &x, &y, &width, &height );
+
+			fd.x = (int)x;
+			fd.y = (int)y;
+			fd.width = (int)(width + 0.5f);
+			fd.height = (int)(height + 0.5f);
+
+			re.RenderScene( &fd );
+			return 0;
+		}
+#endif
 		re.RenderScene( VMA(1) );
 		return 0;
 
@@ -858,6 +950,68 @@ intptr_t CL_UISystemCalls( intptr_t *args ) {
 		return 0;
 
 	case UI_R_DRAWSTRETCHPIC:
+#ifdef USE_FLEXIBLE_DISPLAY
+		if ( cl_flexibleDisplay->integer ) {
+			float x = VMF(1);
+			float y = VMF(2);
+			float width = VMF(3);
+			float height = VMF(4);
+			float s0 = VMF(5);
+			float t0 = VMF(6);
+			float s1 = VMF(7);
+			float t1 = VMF(8);
+
+			// Clamp bounds so it doesn't run off the virtual 4:3 screen.
+			if ( cl_viewmode->integer <= 2 ) {
+				float value;
+
+				if ( x + width > SCREEN_WIDTH ) {
+					value = SCREEN_WIDTH - x;
+					if ( value < 0 ) {
+						value = 0;
+					}
+					s1 = ( s1 - s0 ) * ( value / width ) + s0;
+					width = value;
+				}
+				// clamp other sides as well
+				if ( y + height > SCREEN_HEIGHT ) {
+					value = SCREEN_HEIGHT - y;
+					if ( value < 0 ) {
+						value = 0;
+					}
+					t1 = ( t1 - t0 ) * ( value / height ) + t0;
+					height = value;
+				}
+				if ( x < 0 ) {
+					value = width + x;
+					if ( value < 0 ) {
+						value = 0;
+					}
+					s0 = ( s0 - s1 ) * ( value / width ) + s1;
+					width = value;
+					x = 0;
+				}
+				if ( y < 0 ) {
+					value = height + y;
+					if ( value < 0 ) {
+						value = 0;
+					}
+					t0 = ( t0 - t1 ) * ( value / height ) + t1;
+					height = value;
+					y = 0;
+				}
+
+				if ( width == 0 || height == 0 ) {
+					return 0;
+				}
+			}
+
+			CL_AdjustFromUI( &x, &y, &width, &height );
+
+			re.DrawStretchPic( x, y, width, height, s0, t0, s1, t1, args[9] );
+			return 0;
+		}
+#endif
 		re.DrawStretchPic( VMF(1), VMF(2), VMF(3), VMF(4), VMF(5), VMF(6), VMF(7), VMF(8), args[9] );
 		return 0;
 
@@ -1091,7 +1245,10 @@ intptr_t CL_UISystemCalls( intptr_t *args ) {
 
 	case UI_CIN_PLAYCINEMATIC:
 	  Com_DPrintf("UI_CIN_PlayCinematic\n");
-	  return CIN_PlayCinematic(VMA(1), args[2], args[3], args[4], args[5], args[6]);
+#ifdef USE_FLEXIBLE_DISPLAY
+	  // NOTE: position is offset by cl_flexibleDisplay
+#endif
+	  return CIN_PlayCinematic(VMA(1), args[2], args[3], args[4], args[5], args[6], CIN_UI);
 
 	case UI_CIN_STOPCINEMATIC:
 	  return CIN_StopCinematic(args[1]);
@@ -1104,7 +1261,10 @@ intptr_t CL_UISystemCalls( intptr_t *args ) {
 	  return 0;
 
 	case UI_CIN_SETEXTENTS:
-	  CIN_SetExtents(args[1], args[2], args[3], args[4], args[5]);
+#ifdef USE_FLEXIBLE_DISPLAY
+	  // NOTE: position is offset by cl_flexibleDisplay
+#endif
+	  CIN_SetExtents(args[1], args[2], args[3], args[4], args[5], CIN_UI);
 	  return 0;
 
 	case UI_R_REMAP_SHADER:

@@ -44,6 +44,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
   #define CINEMATICS_INTRO		"intro.roq"
 //  #define LEGACY_PROTOCOL	// You probably don't need this for your standalone game
 //  #define PROTOCOL_HANDLER		"foobar"
+//  #define USE_FLEXIBLE_DISPLAY
 #elif defined ELITEFORCE
   #define PRODUCT_NAME				"Lilium Voyager HM"
   #define BASEGAME					"baseEF"
@@ -63,6 +64,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
   //#define CINEMATICS_INTRO		"intro.bik"
   #define LEGACY_PROTOCOL
   #define PROTOCOL_HANDLER		"stvef"
+  #define USE_FLEXIBLE_DISPLAY
 #else
   #define PRODUCT_NAME				"Lilium Arena"
   #define BASEGAME					"baseq3"
@@ -83,6 +85,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
   #define CINEMATICS_INTRO		"intro.RoQ"
   #define LEGACY_PROTOCOL
   #define PROTOCOL_HANDLER		"quake3"
+  #define USE_FLEXIBLE_DISPLAY
 #endif
 
 // Heartbeat for dpmaster protocol. You shouldn't change this unless you know what you're doing

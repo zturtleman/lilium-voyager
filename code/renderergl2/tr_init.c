@@ -1453,7 +1453,11 @@ void R_Register( void )
 
 	r_marksOnTriangleMeshes = ri.Cvar_Get("r_marksOnTriangleMeshes", "0", CVAR_ARCHIVE);
 
+#ifdef __EMSCRIPTEN__
 	r_vaoCache = ri.Cvar_Get("r_vaoCache", "0", CVAR_ARCHIVE);
+#else
+	r_vaoCache = ri.Cvar_Get("r_vaoCache", "1", CVAR_ARCHIVE);
+#endif
 
 	r_aviMotionJpegQuality = ri.Cvar_Get("r_aviMotionJpegQuality", "90", CVAR_ARCHIVE);
 	r_screenshotJpegQuality = ri.Cvar_Get("r_screenshotJpegQuality", "90", CVAR_ARCHIVE);
@@ -1740,6 +1744,11 @@ refexport_t *GetRefAPI ( int apiVersion, refimport_t *rimp ) {
 	re.inPVS = R_inPVS;
 
 	re.TakeVideoFrame = RE_TakeVideoFrame;
+
+#ifdef USE_FLEXIBLE_DISPLAY
+	// TODO: This needs to resize all screen-sized FBOs and attached images.
+	re.ResizeWindow = NULL; //GLimp_ResizeWindow;#endif
+#endif
 
 	return &re;
 }

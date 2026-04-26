@@ -123,6 +123,19 @@ static	void R_ColorShiftLightingBytes( byte in[4], byte out[4] ) {
 		b = b * 255 / max;
 	}
 
+	if(r_greyscale->integer)
+	{
+		int scale = LUMA(r, g, b);
+		r = g = b = scale;
+	}
+	else if(r_greyscale->value)
+	{
+		float scale = LUMA(r, g, b);
+		r = LERP(r, scale, r_greyscale->value);
+		g = LERP(g, scale, r_greyscale->value);
+		b = LERP(b, scale, r_greyscale->value);
+	}
+
 	out[0] = r;
 	out[1] = g;
 	out[2] = b;
@@ -154,6 +167,19 @@ static void R_ColorShiftLightingFloats(float in[4], float out[4])
 		r = r / max;
 		g = g / max;
 		b = b / max;
+	}
+
+	if(r_greyscale->integer)
+	{
+		scale = LUMA(r, g, b);
+		r = g = b = scale;
+	}
+	else if(r_greyscale->value)
+	{
+		scale = LUMA(r, g, b);
+		r = LERP(r, scale, r_greyscale->value);
+		g = LERP(g, scale, r_greyscale->value);
+		b = LERP(b, scale, r_greyscale->value);
 	}
 
 	out[0] = r;

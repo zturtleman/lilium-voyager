@@ -58,6 +58,8 @@ console_t	con;
 cvar_t		*con_conspeed;
 cvar_t		*con_autoclear;
 cvar_t		*con_notifytime;
+cvar_t		*con_native;
+cvar_t		*con_scale;
 
 #define	DEFAULT_CONSOLE_WIDTH	78
 
@@ -359,6 +361,10 @@ void Con_Init (void) {
 	con_notifytime = Cvar_Get ("con_notifytime", "3", 0);
 	con_conspeed = Cvar_Get ("scr_conspeed", "3", 0);
 	con_autoclear = Cvar_Get("con_autoclear", "1", CVAR_ARCHIVE);
+	con_native = Cvar_Get("con_native", "0", CVAR_ARCHIVE);
+	con_scale = Cvar_Get("con_scale", "1", CVAR_ARCHIVE);
+	Cvar_CheckRange( con_scale, 1, 8, qfalse );
+	con_scale->modified = qfalse;
 
 	Field_Clear( &g_consoleField );
 	g_consoleField.widthInChars = g_console_field_width;
@@ -531,6 +537,33 @@ DRAWING
 
 /*
 ================
+Con_SetTextPlacement
+================
+*/
+void Con_SetTextPlacement( void ) {
+	int placement = 0;
+
+	if ( con_native->integer ) {
+		placement |= SCR_VERT_NATIVE | SCR_HOR_NATIVE;
+	}
+
+#ifdef USE_FLEXIBLE_DISPLAY
+	if ( cl_flexibleDisplay->integer && cl_viewmode->integer <= 2 ) {
+		placement |= SCR_VERT_CENTER | SCR_HOR_CENTER;
+	} else if ( cl_flexibleDisplay->integer && !con_native->integer && cl_viewmode->integer == 5 ) {
+		placement |= SCR_VERT_STRETCH | SCR_HOR_STRETCH;
+	} else
+#endif
+	{
+		placement |= SCR_VERT_TOP | SCR_HOR_LEFT;
+	}
+
+	SCR_SetScreenPlacement( placement );
+	SCR_SetNativeScale( con_scale->value );
+}
+
+/*
+================
 Con_DrawInput
 
 Draw the editline after a ] prompt
@@ -569,6 +602,39 @@ void Con_DrawNotify (void)
 	int		time;
 	int		skip;
 	int		currentColor;
+	int		conXOffset;
+
+#ifdef USE_FLEXIBLE_DISPLAY
+	if ( cl_flexibleDisplay->integer ) {
+		if ( cl_viewmode->integer <= 3 || ( !con_native->integer && cl_viewmode->integer == 5 ) ) {
+			// this matches the cl_flexibleDisplay 0 code path but it has
+			// resolution dependent behavior. higher resolutions end up
+			// with notify text on top of the Team Arena voice head.
+			if ( con_native->integer ) {
+				conXOffset = cl_conXOffset->integer * cls.screenXScale / con_scale->value;
+			} else {
+				conXOffset = cl_conXOffset->integer;
+			}
+		} else {
+			// the HUD is stretched so stretch the x offset position to
+			// to avoid text over Team Arena voice head
+			if ( con_native->integer ) {
+				conXOffset = cl_conXOffset->integer * cls.screenXScaleStretch / con_scale->value;
+			} else {
+				conXOffset = cl_conXOffset->integer * cls.screenXScaleStretch / cls.screenXScale;
+			}
+		}
+	} else
+#endif
+	if ( con_native->integer ) {
+		conXOffset = cl_conXOffset->integer / con_scale->value;
+	} else {
+		// convert cl_conXOffset from native coords to 640 coords to match
+		// the original Quake 3 behavior
+		conXOffset = cl_conXOffset->integer / cls.screenXScale;
+	}
+
+	Con_SetTextPlacement();
 
 	currentColor = 7;
 	re.SetColor( g_color_table[currentColor] );
@@ -598,7 +664,7 @@ void Con_DrawNotify (void)
 				currentColor = ColorIndexForNumber( text[x]>>8 );
 				re.SetColor( g_color_table[currentColor] );
 			}
-			SCR_DrawSmallChar( cl_conXOffset->integer + con.xadjust + (x+1)*SMALLCHAR_WIDTH, v, text[x] & 0xff );
+			SCR_DrawSmallChar( conXOffset + con.xadjust + (x+1)*SMALLCHAR_WIDTH, v, text[x] & 0xff );
 		}
 
 		v += SMALLCHAR_HEIGHT;
@@ -613,6 +679,19 @@ void Con_DrawNotify (void)
 	// draw the chat line
 	if ( Key_GetCatcher( ) & KEYCATCH_MESSAGE )
 	{
+#ifdef USE_FLEXIBLE_DISPLAY
+		if ( cl_flexibleDisplay->integer && cl_viewmode->integer <= 3 ) {
+			if ( cl_viewmode->integer <= 2 ) {
+				SCR_SetScreenPlacement( SCR_VERT_CENTER | SCR_HOR_CENTER );
+			} else {
+				SCR_SetScreenPlacement( SCR_VERT_TOP | SCR_HOR_LEFT );
+			}
+		} else
+#endif
+		{
+			SCR_SetScreenPlacement( SCR_VERT_STRETCH | SCR_HOR_STRETCH );
+		}
+
 #ifdef ELITEFORCE
 		if (chat_team)
 		{
@@ -662,23 +741,94 @@ void Con_DrawSolidConsole( float frac ) {
 //	qhandle_t		conShader;
 	int				currentColor;
 	vec4_t			color;
+	int				vidWidth;
+	int				vidHeight;
 
-	lines = cls.glconfig.vidHeight * frac;
+#ifdef USE_FLEXIBLE_DISPLAY
+	if ( cl_flexibleDisplay->integer && ( cl_viewmode->integer <= 2
+		|| ( !con_native->integer && cl_viewmode->integer == 5 ) ) ) {
+		vidWidth = SCREEN_WIDTH;
+		vidHeight = SCREEN_HEIGHT;
+
+		if ( con_native->integer ) {
+			vidWidth *= cls.screenXScale / con_scale->value;
+			vidHeight *= cls.screenYScale / con_scale->value;
+		}
+	} else
+#endif
+	if ( con_native->integer ) {
+		vidWidth = cls.glconfig.vidWidth / con_scale->value;
+		vidHeight = cls.glconfig.vidHeight / con_scale->value;
+	} else {
+		vidWidth = cls.glconfig.vidWidth / cls.screenXScale;
+		vidHeight = cls.glconfig.vidHeight / cls.screenYScale;
+	}
+
+	lines = vidHeight * frac;
 	if (lines <= 0)
 		return;
 
-	if (lines > cls.glconfig.vidHeight )
-		lines = cls.glconfig.vidHeight;
+	if (lines > vidHeight )
+		lines = vidHeight;
 
+#ifdef USE_FLEXIBLE_DISPLAY
+	if ( cl_flexibleDisplay->integer && cl_viewmode->integer <= 2 ) {
+		SCR_SetScreenPlacement( SCR_VERT_CENTER | SCR_HOR_CENTER );
+	} else
+#endif
+	{
+		SCR_SetScreenPlacement( SCR_VERT_STRETCH | SCR_HOR_STRETCH );
+	}
+
+#ifndef USE_FLEXIBLE_DISPLAY
 	// on wide screens, we will center the text
 	con.xadjust = 0;
 	SCR_AdjustFrom640( &con.xadjust, NULL, NULL, NULL );
+#endif
 
 	// draw the background
 	y = frac * SCREEN_HEIGHT;
 	if ( y < 1 ) {
 		y = 0;
 	}
+#ifdef USE_FLEXIBLE_DISPLAY
+	else if ( cl_flexibleDisplay->integer && cl_viewmode->integer == 3 ) {
+		const float picX = SCREEN_WIDTH;
+		const float picY = SCREEN_HEIGHT / 2;
+		float ax, ay, aw, ah;
+		float s0, t0, s1, t1;
+		float sDelta, tDelta;
+
+		ax = 0;
+		ay = 0;
+		aw = SCREEN_WIDTH;
+		ah = y;
+		SCR_AdjustFrom640( &ax, &ay, &aw, &ah );
+
+		// get aspect correct coords
+		s0 = ax/(picX * cls.screenXScale);
+		t0 = ay/(picY * cls.screenYScale);
+		s1 = (ax+aw)/(picX * cls.screenXScale);
+		t1 = (ay+ah)/(picY * cls.screenYScale);
+
+		// center pic
+		sDelta = (1.0f - s1) / 2.0f;
+		tDelta = (1.0f - t1) / 2.0f;
+		s0 += sDelta;
+		s1 += sDelta;
+		t0 += tDelta;
+		t1 += tDelta;
+
+		#ifdef ELITEFORCE
+		color[0] = 0;
+		color[1] = 0;
+		color[2] = 0;
+		color[3] = 0.85;
+		re.SetColor(color);
+		#endif
+		re.DrawStretchPic( ax, ay, aw, ah, s0, t0, s1, t1, cls.consoleShader );
+	}
+#endif
 	else {
 		#ifdef ELITEFORCE
 		color[0] = 0;
@@ -697,6 +847,8 @@ void Con_DrawSolidConsole( float frac ) {
 	SCR_FillRect( 0, y, SCREEN_WIDTH, 2, color );
 
 
+	Con_SetTextPlacement();
+
 	// draw the version number
 
 	re.SetColor( g_color_table[ColorIndex(COLOR_RED)] );
@@ -704,7 +856,7 @@ void Con_DrawSolidConsole( float frac ) {
 	i = strlen( Q3_VERSION );
 
 	for (x=0 ; x<i ; x++) {
-		SCR_DrawSmallChar( cls.glconfig.vidWidth - ( i - x + 1 ) * SMALLCHAR_WIDTH,
+		SCR_DrawSmallChar( vidWidth - ( i - x + 1 ) * SMALLCHAR_WIDTH,
 			lines - SMALLCHAR_HEIGHT, Q3_VERSION[x] );
 	}
 
@@ -762,6 +914,22 @@ void Con_DrawSolidConsole( float frac ) {
 	// draw the input prompt, user text, and cursor if desired
 	Con_DrawInput ();
 
+#ifdef USE_FLEXIBLE_DISPLAY
+	// add border if necessary so text drawing past the top of the console isn't visible
+	if ( cl_flexibleDisplay->integer && cl_viewmode->integer <= 2 ) {
+		float ax, ay;
+
+		ax = 0;
+		ay = 0;
+		SCR_AdjustFrom640( &ax, &ay, NULL, NULL );
+
+		if ( ay ) {
+			re.SetColor( g_color_table[0] );
+			re.DrawStretchPic( ax, 0, cls.glconfig.vidWidth, ay, 0, 0, 0, 0, cls.whiteShader );
+		}
+	}
+#endif
+
 	re.SetColor( NULL );
 }
 
@@ -773,6 +941,13 @@ Con_DrawConsole
 ==================
 */
 void Con_DrawConsole( void ) {
+	if ( con_scale->modified ) {
+		if ( !con_native->integer ) {
+			Com_Printf( "con_scale requires con_native cvar to be set to 1\n" );
+		}
+		con_scale->modified = qfalse;
+	}
+
 	// check for console width changes from a vid mode change
 	Con_CheckResize ();
 

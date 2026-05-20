@@ -160,25 +160,25 @@ endif
 
 ifndef CLIENTBIN
   ifeq ($(BUILD_ELITEFORCE),1)
-    CLIENTBIN=liliumvoyhm
+    CLIENTBIN=lilium-voyager
   else
-    CLIENTBIN=liliumarena
+    CLIENTBIN=lilium-arena
   endif
 endif
 
 ifndef SERVERBIN
   ifeq ($(BUILD_ELITEFORCE),1)
-    SERVERBIN=liliumvoyded
+    SERVERBIN=lilium-voyager-server
   else
-    SERVERBIN=liliumarena-server
+    SERVERBIN=lilium-arena-server
   endif
 endif
 
 ifndef RENDERER_PREFIX
   ifeq ($(BUILD_ELITEFORCE),1)
-    RENDERER_PREFIX=liliumvoyhm_renderer_
+    RENDERER_PREFIX=lilium-voyager-renderer-
   else
-    RENDERER_PREFIX=liliumarena-renderer-
+    RENDERER_PREFIX=lilium-arena-renderer-
   endif
 endif
 
@@ -844,6 +844,8 @@ ifdef MINGW
     BASE_CFLAGS += -m64
   endif
 
+  BASE_CFLAGS += -DUNICODE -D_UNICODE
+
   # libmingw32 must be linked before libSDLmain
   CLIENT_LIBS += -lmingw32
   RENDERER_LIBS += -lmingw32
@@ -1212,7 +1214,7 @@ endif
 TARGETS =
 
 ifndef FULLBINEXT
-  FULLBINEXT=.$(ARCH)$(BINEXT)
+  FULLBINEXT=_$(ARCH)$(BINEXT)
 endif
 
 ifndef SHLIBNAME
@@ -3082,6 +3084,7 @@ $(B)/renderergl1/%.o: $(RGL1DIR)/%.c
 $(B)/renderergl1/tr_altivec.o: $(RGL1DIR)/tr_altivec.c
 	$(DO_REF_CC_ALTIVEC)
 
+.PRECIOUS: $(B)/renderergl2/glsl/%.c
 $(B)/renderergl2/glsl/%.c: $(RGL2DIR)/glsl/%.glsl $(STRINGIFY)
 	$(DO_REF_STR)
 

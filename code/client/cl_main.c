@@ -3699,47 +3699,33 @@ static void CL_PrintViewMode( void ) {
 
 /*
 =================
-CL_SizeDown_f
+CL_FlexUp_f
 =================
 */
-static void CL_SizeUp_f (void) {
-	if ( cl_flexibleDisplay->integer ) {
-		if ( cl_viewsize->integer >= 100 ) {
-			if ( cl_viewmode->integer >= 6 ) {
-				return;
-			}
-
-			Cvar_Set(cl_viewmode->name, va("%i",(int)(cl_viewmode->integer+1)));
-			CL_PrintViewMode();
-		} else {
-			Cvar_Set("cg_viewsize", va("%i",(int)(cl_viewsize->integer+10)));
-		}
-	} else {
-		// run command in cgame
-		if ( com_cl_running && com_cl_running->integer && CL_GameCommand() ) {
+static void CL_FlexUp_f (void) {
+	if ( cl_flexibleDisplay->integer && cl_viewsize->integer >= 100 ) {
+		if ( cl_viewmode->integer >= 6 ) {
 			return;
 		}
+
+		Cvar_Set(cl_viewmode->name, va("%i",(int)(cl_viewmode->integer+1)));
+		CL_PrintViewMode();
+	} else {
+		Cvar_Set("cg_viewsize", va("%i",(int)(cl_viewsize->integer+10)));
 	}
 }
 
 /*
 =================
-CL_SizeDown_f
+CL_FlexDown_f
 =================
 */
-static void CL_SizeDown_f (void) {
-	if ( cl_flexibleDisplay->integer ) {
-		if ( cl_viewmode->integer > 1 ) {
-			Cvar_Set(cl_viewmode->name, va("%i",(int)(cl_viewmode->integer-1)));
-			CL_PrintViewMode();
-		} else {
-			Cvar_Set("cg_viewsize", va("%i",(int)(cl_viewsize->integer-10)));
-		}
+static void CL_FlexDown_f (void) {
+	if ( cl_flexibleDisplay->integer && cl_viewmode->integer > 1 ) {
+		Cvar_Set(cl_viewmode->name, va("%i",(int)(cl_viewmode->integer-1)));
+		CL_PrintViewMode();
 	} else {
-		// run command in cgame
-		if ( com_cl_running && com_cl_running->integer && CL_GameCommand() ) {
-			return;
-		}
+		Cvar_Set("cg_viewsize", va("%i",(int)(cl_viewsize->integer-10)));
 	}
 }
 #endif
@@ -3915,7 +3901,7 @@ void CL_Init( void ) {
 	cl_voipVADThreshold = Cvar_Get ("cl_voipVADThreshold", "0.25", CVAR_ARCHIVE);
 	cl_voipShowMeter = Cvar_Get ("cl_voipShowMeter", "1", CVAR_ARCHIVE);
 
-	cl_voip = Cvar_Get ("cl_voip", "1", CVAR_ARCHIVE);
+	cl_voip = Cvar_Get ("cl_voip", "0", CVAR_ARCHIVE);
 	Cvar_CheckRange( cl_voip, 0, 1, qtrue );
 	cl_voipProtocol = Cvar_Get ("cl_voipProtocol", cl_voip->integer ? "opus" : "", CVAR_USERINFO | CVAR_ROM);
 #endif
@@ -3969,8 +3955,8 @@ void CL_Init( void ) {
 		Cmd_SetCommandCompletionFunc( "sayto", CL_CompletePlayerName );
 	}
 #ifdef USE_FLEXIBLE_DISPLAY
-	Cmd_AddCommand ("sizeup", CL_SizeUp_f );
-	Cmd_AddCommand ("sizedown", CL_SizeDown_f );
+	Cmd_AddCommand ("flexup", CL_FlexUp_f );
+	Cmd_AddCommand ("flexdown", CL_FlexDown_f );
 #endif
 
 	CL_InitRef();

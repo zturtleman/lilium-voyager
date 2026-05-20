@@ -188,6 +188,7 @@ extern void (APIENTRYP qglUnlockArraysEXT) (void);
 	GLE(void, UniformMatrix4fv, GLint location, GLsizei count, GLboolean transpose, const GLfloat *value) \
 	GLE(void, ValidateProgram, GLuint program) \
 	GLE(void, VertexAttribPointer, GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const void *pointer) \
+	GLE(void, VertexAttrib4fv, GLuint index, const GLfloat *values) \
 
 // GL_NVX_gpu_memory_info
 #ifndef GL_NVX_gpu_memory_info

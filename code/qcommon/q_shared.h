@@ -43,6 +43,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
   #define CINEMATICS_LOGO		"foologo.roq"
   #define CINEMATICS_INTRO		"intro.roq"
 //  #define LEGACY_PROTOCOL	// You probably don't need this for your standalone game
+//  #define QVM_STRNCPY_OVERLAP	// You probably don't need this for your standalone game
 //  #define PROTOCOL_HANDLER		"foobar"
 //  #define USE_FLEXIBLE_DISPLAY
 #elif defined ELITEFORCE
@@ -84,6 +85,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
   #define CINEMATICS_LOGO		"idlogo.RoQ"
   #define CINEMATICS_INTRO		"intro.RoQ"
   #define LEGACY_PROTOCOL
+  #define QVM_STRNCPY_OVERLAP
   #define PROTOCOL_HANDLER		"quake3"
   #define USE_FLEXIBLE_DISPLAY
 #endif
@@ -105,9 +107,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #ifndef RENDERER_PREFIX
   #ifdef ELITEFORCE
-    #define RENDERER_PREFIX "liliumvoyhm_renderer_"
+    #define RENDERER_PREFIX "lilium-voyager-renderer-"
   #else
-    #define RENDERER_PREFIX "liliumarena-renderer-"
+    #define RENDERER_PREFIX "lilium-arena-renderer-"
   #endif
 #endif
 
@@ -459,7 +461,7 @@ extern	vec4_t		colorMdGrey;
 extern	vec4_t		colorDkGrey;
 
 #define Q_COLOR_ESCAPE	'^'
-qboolean Q_IsColorString(const char *p);  // ^[0-9a-zA-Z]
+#define Q_IsColorString(p)	((p) && *(p) == Q_COLOR_ESCAPE && *((p)+1) && isalnum(*((p)+1) & 255)) // ^[0-9a-zA-Z]
 
 #define COLOR_BLACK	'0'
 #define COLOR_RED	'1'

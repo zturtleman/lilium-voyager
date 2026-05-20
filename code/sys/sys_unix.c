@@ -38,7 +38,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <fcntl.h>
 #include <fenv.h>
 #include <sys/wait.h>
+#include <sys/resource.h>
 #include <time.h>
+#include <dlfcn.h>
 
 qboolean stdinIsATTY;
 
@@ -200,7 +202,7 @@ qboolean Sys_RandomBytes( byte *string, int len )
 {
 	FILE *fp;
 
-	fp = fopen( "/dev/urandom", "r" );
+	fp = Sys_FOpen( "/dev/urandom", "r" );
 	if( !fp )
 		return qfalse;
 
@@ -293,6 +295,16 @@ FILE *Sys_FOpen( const char *ospath, const char *mode ) {
 }
 
 /*
+==============
+Sys_Remove
+==============
+*/
+void Sys_Remove( const char *ospath )
+{
+	remove( ospath );
+}
+
+/*
 ==================
 Sys_Mkdir
 ==================
@@ -321,13 +333,13 @@ FILE *Sys_Mkfifo( const char *ospath )
 
 	// if file already exists AND is a pipefile, remove it
 	if( !stat( ospath, &buf ) && S_ISFIFO( buf.st_mode ) )
-		FS_Remove( ospath );
+		Sys_Remove( ospath );
 
 	result = mkfifo( ospath, 0600 );
 	if( result != 0 )
 		return NULL;
 
-	fifo = fopen( ospath, "w+" );
+	fifo = Sys_FOpen( ospath, "w+" );
 	if( fifo )
 	{
 		fn = fileno( fifo );
@@ -909,6 +921,15 @@ void Sys_SetFloatEnv(void)
 
 /*
 ==============
+Sys_CommandLineInit
+==============
+*/
+void Sys_CommandLineInit( int *argcP, char ***argvP ) {
+	// no change, args are valid from main()
+}
+
+/*
+==============
 Sys_PlatformInit
 
 Unix specific initialisation
@@ -917,6 +938,7 @@ Unix specific initialisation
 void Sys_PlatformInit( void )
 {
 	const char* term = getenv( "TERM" );
+	struct rlimit nofile;
 
 	signal( SIGHUP, Sys_SigHandler );
 	signal( SIGQUIT, Sys_SigHandler );
@@ -928,6 +950,13 @@ void Sys_PlatformInit( void )
 
 	stdinIsATTY = isatty( STDIN_FILENO ) &&
 		!( term && ( !strcmp( term, "raw" ) || !strcmp( term, "dumb" ) ) );
+
+	// increase maximum open files
+	if ( getrlimit( RLIMIT_NOFILE, &nofile ) == 0 && nofile.rlim_cur < 2048 ) {
+		nofile.rlim_cur = MIN( 2048, nofile.rlim_max );
+
+		setrlimit( RLIMIT_NOFILE, &nofile );
+	}
 }
 
 /*
@@ -976,6 +1005,44 @@ qboolean Sys_PIDIsRunning( int pid )
 {
 	return kill( pid, 0 ) == 0;
 }
+
+#ifdef DEDICATED
+/*
+==============
+Sys_LoadLibrary
+==============
+*/
+void *Sys_LoadLibrary( const char *f ) {
+	return dlopen( f, RTLD_NOW );
+}
+
+/*
+==============
+Sys_UnloadLibrary
+==============
+*/
+void Sys_UnloadLibrary( void *h ) {
+	dlclose( h );
+}
+
+/*
+==============
+Sys_LoadFunction
+==============
+*/
+void *Sys_LoadFunction( void *h, const char *fn ) {
+	return dlsym( h, fn );
+}
+
+/*
+==============
+Sys_LibraryError
+==============
+*/
+const char *Sys_LibraryError( void ) {
+	return dlerror();
+}
+#endif
 
 /*
 =================

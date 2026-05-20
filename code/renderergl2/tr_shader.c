@@ -2612,6 +2612,15 @@ static int CollapseStagesToGLSL(void)
 			if (pStage->adjustColorsForFog)
 				continue;
 
+			switch(pStage->alphaGen)
+			{
+				case AGEN_LIGHTING_SPECULAR:
+				case AGEN_PORTAL:
+					continue;
+				default:
+					break;
+			}
+
 			if (pStage->bundle[TB_DIFFUSEMAP].tcGen != TCGEN_LIGHTMAP)
 				continue;
 
@@ -2644,6 +2653,15 @@ static int CollapseStagesToGLSL(void)
 
 			if (pStage->adjustColorsForFog)
 				continue;
+
+			switch(pStage->alphaGen)
+			{
+				case AGEN_LIGHTING_SPECULAR:
+				case AGEN_PORTAL:
+					continue;
+				default:
+					break;
+			}
 
 			if (pStage->rgbGen == CGEN_LIGHTING_DIFFUSE)
 			{

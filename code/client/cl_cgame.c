@@ -44,6 +44,7 @@ static qboolean cl_enteredStatusBar;
 static qboolean cl_enteredLowerLeft;
 static qboolean cl_ignoreLowerLeft;
 static qboolean cl_drewLagometer;
+static qboolean cl_drewWorld;
 #endif
 
 /*
@@ -110,13 +111,16 @@ void CL_AdjustFromCGame( float *x, float *y, float *w, float *h ) {
 
 	int placement;
 
-	if ( cl_viewmode->integer <= 3 ) {
+	if ( clc.state == CA_ACTIVE && !cl_drewWorld && ( cl_viewmode->integer == 2 || cl_viewmode->integer == 3 ) ) {
+		// cg_viewsize border
+		placement = SCR_VERT_STRETCH | SCR_HOR_STRETCH;
+	} else if ( cl_viewmode->integer == 1 || ( cl_viewmode->integer <= 3 ) ) {
 		placement = SCR_VERT_CENTER | SCR_HOR_CENTER;
 	} else {
 		placement = SCR_VERT_STRETCH | SCR_HOR_STRETCH;
 	}
 
-	if ( clc.state == CA_ACTIVE && cl_viewmode->integer == 3 ) {
+	if ( clc.state == CA_ACTIVE && cl_viewmode->integer == 3 && cl_drewWorld ) {
 		qboolean upperRight = qfalse;
 		const char *gamedir;
 
@@ -126,7 +130,7 @@ void CL_AdjustFromCGame( float *x, float *y, float *w, float *h ) {
 		placement = SCR_VERT_BOTTOM | SCR_HOR_CENTER;
 
 		// The scoreboard is drawn after the HUD.
-		if ( *y >= 60 && *y <= 69/*86*/ && *x >= 8 && *x < 320 ) {
+		if ( *y >= 60 && *y <= 69/*86*/ && cl_originx >= 8 && cl_originx < 320 ) {
 			// baseq3 scoreboard text or column header (center print is lower than this)
 			cl_enteredScoreboard = qtrue;
 		}
@@ -134,13 +138,13 @@ void CL_AdjustFromCGame( float *x, float *y, float *w, float *h ) {
 		// tournament names (A vs B) draw at y=70
 
 		// osp draws initial connect message here but it's not after the HUD
-		if ( *y >= 87 && *y <= 144 && *x >= 8 && *x < 320 && strcmp( gamedir, "osp" ) != 0 ) {
+		if ( *y >= 87 && *y <= 144 && cl_originx >= 8 && cl_originx < 320 && strcmp( gamedir, "osp" ) != 0 ) {
 			// baseq3 center print text (this is drawn instead of scoreboard)
 			// proball scoreboard
 			cl_enteredScoreboard = qtrue;
 		}
 
-		if ( *y < 380 - 22 - TINYCHAR_HEIGHT * 8 && *x >= 8 && *w > SCREEN_WIDTH / 2 && *h > 16 ) {
+		if ( *y < 380 - 22 - TINYCHAR_HEIGHT * 8 && cl_originx >= 8 && *w > SCREEN_WIDTH / 2 && *h > 16 ) {
 			// Team Arena scoreboard
 			// if it's above the statusbar and area for cg_drawTeamOverlay 3
 			// and over half the screen width,  it's probably the scoreboard background.
@@ -804,6 +808,24 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 			memcpy( &fd, VMA(1), sizeof( refdef_t ) );
 
 			if ( cl_viewmode->integer >= 2 && fd.x == 0 && fd.y == 0 && fd.width == 640 && fd.height == 480 ) {
+				// make the world scene fill the window
+				fd.width = cls.glconfig.vidWidth;
+				fd.height = cls.glconfig.vidHeight;
+			} else {
+				x = fd.x;
+				y = fd.y;
+				width = fd.width;
+				height = fd.height;
+
+				CL_AdjustFromCGame( &x, &y, &width, &height );
+
+				fd.x = (int)x;
+				fd.y = (int)y;
+				fd.width = (int)(width + 0.5f);
+				fd.height = (int)(height + 0.5f);
+			}
+
+			if ( !( fd.rdflags & RDF_NOWORLDMODEL ) ) {
 				float expected_fov_y, water_fov_y;
 
 				// find underwater view fov_y offset
@@ -812,10 +834,6 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 				expected_fov_y = expected_fov_y * 360 / M_PI;
 
 				water_fov_y = expected_fov_y - fd.fov_y;
-
-				// make the world scene fill the window
-				fd.width = cls.glconfig.vidWidth;
-				fd.height = cls.glconfig.vidHeight;
 
 				if ( cl_viewmode->integer == 5 || ( clc.dmflags & DF_FIXED_FOV ) ) {
 					// stretch fov
@@ -845,18 +863,8 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 					// restore underwater effect
 					fd.fov_y -= water_fov_y;
 				}
-			} else {
-				x = fd.x;
-				y = fd.y;
-				width = fd.width;
-				height = fd.height;
 
-				CL_AdjustFromCGame( &x, &y, &width, &height );
-
-				fd.x = (int)x;
-				fd.y = (int)y;
-				fd.width = (int)(width + 0.5f);
-				fd.height = (int)(height + 0.5f);
+				cl_drewWorld = qtrue;
 			}
 
 			re.RenderScene( &fd );
@@ -931,6 +939,23 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 				}
 			}
 
+			// the xy coords for border for cg_viewsize < 100 will be stretched
+			// in CL_AdjustFromCGame(), adjust the texcoords for expanded HUD
+			// modes to remain aspect correct
+			// NOTE: this only works with tiling texures
+			if ( clc.state == CA_ACTIVE && !cl_drewWorld && ( cl_viewmode->integer == 2 || cl_viewmode->integer == 3 ) ) {
+				float scale;
+
+				scale = ( s1 - s0 ) / ( width * cls.screenXScale );
+
+				s0 = ( ( x * cls.screenXScaleStretch ) - cls.screenXBias ) * scale;
+				s1 = ( ( ( x + width ) * cls.screenXScaleStretch ) - cls.screenXBias ) * scale;
+
+				scale = ( t1 - t0 ) / ( height * cls.screenYScale );
+
+				t0 = ( ( y * cls.screenYScaleStretch ) - cls.screenYBias ) * scale;
+				t1 = ( ( ( y + height ) * cls.screenYScaleStretch ) - cls.screenYBias ) * scale;
+			}
 
 			CL_AdjustFromCGame( &x, &y, &width, &height );
 
@@ -989,8 +1014,35 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 		Com_Memcpy( VMA(1), VMA(2), args[3] );
 		return 0;
 	case CG_STRNCPY:
+#ifdef QVM_STRNCPY_OVERLAP
+		// Handle overlapping src and dest as the C standard library may
+		// not support it and some mods may do this.
+		// (Native libraries and QVMs without QVM_STRNCPY_OVERLAP defined
+		// report an error in Q_strncpyz() instead.)
+		{
+			char *dest = VMA(1);
+			const char *src = VMA(2);
+			unsigned int destsize = args[3];
+
+			if ( dest < src + destsize && src < dest + destsize ) {
+				const char *srcend = (const char *)memchr( src, '\0', destsize );
+				unsigned int srclen = srcend ? (unsigned int)( srcend - src ) : destsize;
+
+				if ( dest < src + srclen ) {
+					memmove( dest, src, srclen );
+					memset( dest + srclen, '\0', destsize - srclen );
+
+					return args[1];
+				}
+			}
+
+			strncpy( dest, src, destsize );
+			return args[1];
+		}
+#else
 		strncpy( VMA(1), VMA(2), args[3] );
 		return args[1];
+#endif
 	case CG_SIN:
 		return FloatAsInt( sin( VMF(1) ) );
 	case CG_COS:
@@ -1188,6 +1240,7 @@ void CL_CGameRendering( stereoFrame_t stereo ) {
 	cl_enteredLowerLeft = qfalse;
 	cl_ignoreLowerLeft = qfalse;
 	cl_drewLagometer = qfalse;
+	cl_drewWorld = qfalse;
 #endif
 
 	VM_Call( cgvm, CG_DRAW_ACTIVE_FRAME, cl.serverTime, stereo, clc.demoplaying );
